@@ -4,16 +4,16 @@ from setuptools import setup, find_packages
 
 setup(
     name="das-trader-client",
-    version="0.1.0",
-    author="Tu Nombre",
-    author_email="tu_email@example.com",
-    description="Python client for DAS Trader Pro CMD API",
-    long_description="Cliente Python para la API CMD de DAS Trader Pro que permite trading automatizado, gestión de órdenes, seguimiento de posiciones y streaming de market data en tiempo real.",
+    version="1.0.0",
+    author="DAS Bridge Contributors",
+    author_email="noreply@example.com",
+    description="Professional Python client for DAS Trader Pro CMD API",
+    long_description="Professional Python client for DAS Trader Pro CMD API that enables automated trading, order management, position tracking, and real-time market data streaming. Features comprehensive order types, short locate integration, Level 1/2 market data, and multi-platform notifications.",
     long_description_content_type="text/plain",
-    url="https://github.com/tu_usuario/das-bridge",
+    url="https://github.com/jefrnc/das-bridge",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Financial and Insurance Industry",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
@@ -70,8 +70,8 @@ setup(
     },
     keywords="trading, finance, api, das-trader, stocks, automated-trading",
     project_urls={
-        "Bug Reports": "https://github.com/tu_usuario/das-bridge/issues",
-        "Source": "https://github.com/tu_usuario/das-bridge",
-        "Documentation": "https://github.com/tu_usuario/das-bridge/wiki",
+        "Bug Reports": "https://github.com/jefrnc/das-bridge/issues",
+        "Source": "https://github.com/jefrnc/das-bridge",
+        "Documentation": "https://github.com/jefrnc/das-bridge/wiki",
     },
 )
