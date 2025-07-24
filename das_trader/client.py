@@ -41,6 +41,8 @@ class DASTraderClient:
             auto_reconnect: Enable automatic reconnection
             log_level: Logging level
         """
+        # TODO: Add support for multiple accounts
+        # FIXME: Heartbeat sometimes fails silently after long periods
         logging.basicConfig(
             level=getattr(logging, log_level.upper()),
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -60,13 +62,16 @@ class DASTraderClient:
         
         self.notifications = NotificationManager(notification_config or {}) if notification_config else None
         
-        self._short_info_cache: Dict[str, Dict[str, Any]] = {}
-        self._locate_info: Dict[str, Dict[str, Any]] = {}
+        self._short_info_cache = {}  # symbol -> short info
+        self._locate_info = {}  # symbol -> locate data
+        
+        # TODO: implement cache expiration for short info
         
         self._register_handlers()
     
     def _register_handlers(self):
-        """Register additional message handlers."""
+        # Register message handlers
+        # NOTE: Order matters here - DAS sends these in specific sequence
         self.connection.register_handler("SHORT_INFO", self._handle_short_info)
         self.connection.register_handler("LOCATE_INFO", self._handle_locate_info)
         self.connection.register_handler("LOCATE_RETURN", self._handle_locate_return)
@@ -148,12 +153,11 @@ class DASTraderClient:
     
     @property
     def is_connected(self) -> bool:
-        """Check if connected to DAS API."""
         return self.connection.is_connected
     
     @property
     def is_authenticated(self) -> bool:
-        """Check if authenticated with DAS API."""
+        # TODO: Add better auth check - sometimes reports true when disconnected
         return self.connection.is_authenticated
     
     async def send_order(
@@ -197,11 +201,11 @@ class DASTraderClient:
         )
     
     async def cancel_order(self, order_id: str) -> bool:
-        """Cancel a specific order."""
         return await self.orders.cancel_order(order_id)
     
     async def cancel_all_orders(self, symbol: Optional[str] = None) -> int:
         """Cancel all orders or all orders for a symbol."""
+        # FIXME: Sometimes misses orders placed right before this call
         return await self.orders.cancel_all_orders(symbol)
     
     async def replace_order(
@@ -233,7 +237,7 @@ class DASTraderClient:
         return self.positions.get_position(symbol)
     
     async def refresh_positions(self):
-        """Refresh positions from DAS Trader."""
+        # Force refresh from DAS
         await self.positions.refresh_positions()
     
     def get_total_pnl(self) -> Dict[str, Decimal]:
@@ -323,16 +327,6 @@ class DASTraderClient:
             return {"shortable": False, "rate": Decimal("0"), "available_shares": 0}
     
     async def inquire_locate_price(self, symbol: str, quantity: int, route: str = "ALLROUTE") -> Dict[str, Any]:
-        """Inquire locate price for a symbol.
-        
-        Args:
-            symbol: Stock symbol
-            quantity: Number of shares to locate
-            route: Specific route or "ALLROUTE" for all routes
-            
-        Returns:
-            Dict with locate price information
-        """
         if not validate_symbol(symbol):
             raise DASAPIError(f"Invalid symbol: {symbol}")
         
@@ -376,6 +370,8 @@ class DASTraderClient:
             - rate: Decimal
             - locate_id: str
         """
+        # TODO: Add locate caching to avoid repeated requests
+        # NOTE: Some brokers have daily locate limits
         if not validate_symbol(symbol):
             raise DASAPIError(f"Invalid symbol: {symbol}")
         

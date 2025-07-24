@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_decimal(value: Union[str, float, int, None]) -> Optional[Decimal]:
-    """Safely parse a value to Decimal."""
     if value is None:
         return None
     try:
@@ -23,12 +22,11 @@ def parse_decimal(value: Union[str, float, int, None]) -> Optional[Decimal]:
 
 
 def format_price(price: Union[float, Decimal]) -> str:
-    """Format price for API commands."""
+    # DAS expects 4 decimal places
     return f"{float(price):.4f}"
 
 
 def format_quantity(quantity: Union[int, float]) -> str:
-    """Format quantity for API commands."""
     return str(int(quantity))
 
 
@@ -51,7 +49,8 @@ def parse_timestamp(timestamp_str: str) -> Optional[datetime]:
 
 
 def generate_order_id() -> str:
-    """Generate a unique order ID."""
+    # Simple order ID generation
+    # TODO: Maybe use UUID instead?
     timestamp = str(time.time()).encode()
     return hashlib.md5(timestamp).hexdigest()[:16]
 
@@ -59,6 +58,7 @@ def generate_order_id() -> str:
 def parse_message(message: str) -> Dict[str, Any]:
     """Parse a message from DAS API into structured data."""
     message = message.strip()
+    # print(f"DEBUG: Parsing message: {message[:50]}...")  # debug
     
     # Determine message type by prefix
     if message.startswith("%"):
@@ -134,6 +134,8 @@ def parse_data_message(message: str) -> Dict[str, Any]:
 
 
 def parse_order_message(parts: List[str]) -> Dict[str, Any]:
+    # Parse order updates from DAS
+    # print(f"Parsing order: {parts}")  # debug
     try:
         return {
             "type": "ORDER",
@@ -190,7 +192,7 @@ def parse_position_message(parts: List[str]) -> Dict[str, Any]:
 
 
 def parse_quote_message(parts: List[str]) -> Dict[str, Any]:
-    """Parse a Level 1 quote message."""
+    # Parse Level 1 quotes
     # Format: $Quote Symbol Bid Ask Last Volume ...
     try:
         return {

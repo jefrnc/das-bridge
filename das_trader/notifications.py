@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class NotificationManager:
     """Multi-platform notification manager."""
+    # TODO: Add rate limiting to avoid spam
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -25,8 +26,8 @@ class NotificationManager:
             "email": EmailNotifier(config),
             "discord": DiscordNotifier(config),
             "telegram": TelegramNotifier(config),
-            "pushover": PushoverNotifier(config),
-            "slack": SlackNotifier(config),
+            # "pushover": PushoverNotifier(config),  # Coming soon
+            # "slack": SlackNotifier(config),  # Not implemented yet
             "webhook": WebhookNotifier(config),
             "desktop": DesktopNotifier(config),
         }
@@ -86,8 +87,6 @@ class NotificationManager:
 
 
 class BaseNotifier:
-    """Base class for notifiers."""
-    
     def __init__(self, config: Dict[str, Any]):
         self.config = config
     
@@ -96,7 +95,6 @@ class BaseNotifier:
 
 
 class EmailNotifier(BaseNotifier):
-    """Email notifier."""
     
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
         try:
@@ -182,10 +180,10 @@ class DiscordNotifier(BaseNotifier):
             logger.error("aiohttp not installed. Install with: pip install aiohttp")
         except Exception as e:
             logger.error(f"Error sending to Discord: {e}")
+            # FIXME: Better error handling needed here
 
 
 class TelegramNotifier(BaseNotifier):
-    """Telegram notifier."""
     
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
         try:
@@ -234,21 +232,8 @@ class PushoverNotifier(BaseNotifier):
     """Pushover mobile push notification notifier."""
     
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
-        try:
-            import aiohttp
-            
-            user_key = self.config.get("PUSHOVER_USER_KEY")
-            app_token = self.config.get("PUSHOVER_APP_TOKEN")
-            
-            if not user_key or not app_token:
-                logger.warning("Incomplete Pushover configuration")
-                return
-            
-            priorities = {
-                "info": 0,
-                "success": 0,
-                "warning": 1,
-                "error": 2
+        raise NotImplementedError("Pushover support coming in v2")
+        # TODO: Implement Pushover notifications
             }
             
             payload = {
@@ -278,6 +263,10 @@ class SlackNotifier(BaseNotifier):
     """Slack notifier."""
     
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
+        # Not implemented yet
+        raise NotImplementedError("Slack notifications not ready")
+        # Original implementation below (needs testing):
+        """
         try:
             import aiohttp
             
@@ -285,6 +274,7 @@ class SlackNotifier(BaseNotifier):
             if not webhook_url:
                 logger.warning("Slack webhook URL not configured")
                 return
+        """
             
             colors = {
                 "info": "#36a64f",

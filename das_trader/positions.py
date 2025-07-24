@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Position:
-    """Represents a trading position."""
     symbol: str
     quantity: int  # Positive for long, negative for short
     avg_cost: Decimal
@@ -45,6 +44,7 @@ class Position:
         self.last_update = datetime.now()
     
     def update_pnl(self):
+        # Reset values for closed positions
         if self.quantity == 0:
             self.unrealized_pnl = Decimal("0")
             self.pnl_percent = Decimal("0")
@@ -55,10 +55,11 @@ class Position:
         self.cost_basis = abs(self.quantity) * self.avg_cost
         self.market_value = abs(self.quantity) * self.current_price
         
-        if self.quantity > 0:
+        if self.quantity > 0:  # Long position
             self.unrealized_pnl = self.market_value - self.cost_basis
-        else:
+        else:  # Short position
             self.unrealized_pnl = self.cost_basis - self.market_value
+            # FIXME: Check if this calculation is correct for shorts
         
         if self.cost_basis != 0:
             self.pnl_percent = (self.unrealized_pnl / self.cost_basis) * 100
@@ -66,6 +67,8 @@ class Position:
             self.pnl_percent = Decimal("0")
     
     def add_fill(self, fill_quantity: int, fill_price: Decimal):
+        # Handle position fills
+        # TODO: Track individual fills for better reporting
         if self.quantity == 0:
             self.quantity = fill_quantity
             self.avg_cost = fill_price

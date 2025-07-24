@@ -52,9 +52,9 @@ class ConnectionManager:
         self._password: Optional[str] = None
         self._account: Optional[str] = None
         
-        self._message_queue = asyncio.Queue()
-        self._response_futures: Dict[str, asyncio.Future] = {}
-        self._message_handlers: Dict[str, Callable] = {}
+        self._msg_q = asyncio.Queue()  # incoming messages
+        self._response_futures = {}  # pending responses
+        self._message_handlers = {}
         
         self._reader_task: Optional[asyncio.Task] = None
         self._heartbeat_task: Optional[asyncio.Task] = None
@@ -69,13 +69,16 @@ class ConnectionManager:
         self._register_default_handlers()
     
     def _register_default_handlers(self):
+        # TODO: Add handler for ACCOUNT_UPDATE messages
         self.register_handler("ERROR", self._handle_error_message)
         self.register_handler("WARNING", self._handle_warning_message)
         self.register_handler("INFO", self._handle_info_message)
         self.register_handler("CONNECTION_STATUS", self._handle_connection_status)
+        # FIXME: CONNECTION_STATUS sometimes not received on reconnect
     
     async def connect(self, username: str, password: str, account: str, watch_mode: bool = False):
         """Connect and authenticate with DAS Trader API."""
+        # NOTE: watch_mode not fully implemented yet
         self._username = username
         self._password = password
         self._account = account
@@ -198,6 +201,7 @@ class ConnectionManager:
                 if len(buffer) > BUFFER_SIZE * 10:
                     logger.warning("Buffer overflow, clearing buffer")
                     buffer = buffer[-BUFFER_SIZE:]
+                    # TODO: Better buffer management needed here
                 
                 while MESSAGE_DELIMITER in buffer:
                     message, buffer = buffer.split(MESSAGE_DELIMITER, 1)
@@ -217,6 +221,7 @@ class ConnectionManager:
     async def _process_message(self, message: str):
         try:
             logger.debug(f"Received message: {message}")
+            # logger.debug(f"RAW MSG: {repr(message)}")  # detailed debug
             
             parsed = parse_message(message)
             msg_type = parsed.get("type")
@@ -233,7 +238,7 @@ class ConnectionManager:
                 else:
                     handler(parsed)
             
-            await self._message_queue.put(parsed)
+            await self._msg_q.put(parsed)
             
         except Exception as e:
             logger.error(f"Error processing message '{message}': {e}")

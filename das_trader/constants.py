@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 
 class OrderType(Enum):
-    """Order types supported by DAS Trader."""
+    # Order types from DAS manual
     MARKET = "MKT"
     LIMIT = "LIMIT"
     STOP = "STOPMKT"
@@ -21,7 +21,6 @@ class OrderType(Enum):
 
 
 class OrderSide(Enum):
-    """Order side (buy/sell)."""
     BUY = "B"
     SELL = "S"
     SHORT = "SS"
@@ -34,6 +33,7 @@ class OrderSide(Enum):
 
 class OrderStatus(Enum):
     """Order status states."""
+    # NOTE: These statuses come directly from DAS API
     PENDING = "PENDING"
     NEW = "NEW"
     HOLD = "Hold"
@@ -50,12 +50,11 @@ class OrderStatus(Enum):
 
 
 class TimeInForce(Enum):
-    """Time in force options for orders."""
     DAY = "DAY"
     GTC = "GTC"  # Good Till Cancelled
     IOC = "IOC"  # Immediate or Cancel
     FOK = "FOK"  # Fill or Kill
-    GTD = "GTD"  # Good Till Date
+    GTD = "GTD"  # Good Till Date - TODO: needs date parameter
     MOO = "MOO"  # Market on Open
     MOC = "MOC"  # Market on Close
 

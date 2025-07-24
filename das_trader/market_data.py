@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Quote:
-    """Level 1 quote data."""
+    # Basic quote data
     symbol: str
     bid: Decimal
     ask: Decimal
@@ -41,6 +41,7 @@ class Quote:
     
     @property
     def mid_price(self) -> Decimal:
+        # Midpoint calculation
         return (self.bid + self.ask) / 2
     
     def to_dict(self) -> Dict[str, Any]:
@@ -71,7 +72,6 @@ class Level2Quote:
 
 @dataclass
 class TimeSale:
-    """Time and sales data."""
     symbol: str
     price: Decimal
     size: int
@@ -91,6 +91,7 @@ class TimeSale:
 @dataclass
 class ChartBar:
     """Chart bar data."""
+    # TODO: Add support for extended hours bars
     symbol: str
     chart_type: ChartType
     open: Decimal
