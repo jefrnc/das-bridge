@@ -23,7 +23,7 @@ Cliente Python completo para la API CMD de DAS Trader Pro que permite trading au
 ## ⚡ Instalación Rápida
 
 ```bash
-git clone https://github.com/tu_usuario/das-bridge.git
+git clone https://github.com/jefrnc/das-bridge.git
 cd das-bridge
 pip install -e .
 ```

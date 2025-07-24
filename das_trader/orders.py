@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Order:
-    """Represents a trading order."""
     order_id: str
     symbol: str
     side: OrderSide
@@ -57,6 +56,7 @@ class Order:
         self.updated_at = datetime.now()
         if reason:
             self.reject_reason = reason
+            # TODO: parse common reject reasons for better handling
     
     def add_fill(self, fill_qty: int, fill_price: Decimal):
         self.fills.append({
@@ -68,8 +68,10 @@ class Order:
         self.filled_quantity += fill_qty
         self.remaining_quantity = self.quantity - self.filled_quantity
         
+        # Calculate average fill price
         total_value = sum(f["quantity"] * f["price"] for f in self.fills)
         self.avg_fill_price = total_value / self.filled_quantity if self.filled_quantity > 0 else Decimal("0")
+        # FIXME: This doesn't handle partial cancels correctly
         
         if self.filled_quantity >= self.quantity:
             self.status = OrderStatus.FILLED
