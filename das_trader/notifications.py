@@ -234,29 +234,6 @@ class PushoverNotifier(BaseNotifier):
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
         raise NotImplementedError("Pushover support coming in v2")
         # TODO: Implement Pushover notifications
-            }
-            
-            payload = {
-                "token": app_token,
-                "user": user_key,
-                "title": title,
-                "message": message,
-                "priority": priorities.get(level, 0)
-            }
-            
-            url = "https://api.pushover.net/1/messages.json"
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, data=payload) as response:
-                    if response.status == 200:
-                        logger.info(f"Pushover notification sent: {title}")
-                    else:
-                        logger.error(f"Pushover error: {response.status}")
-                        
-        except ImportError:
-            logger.error("aiohttp not installed. Install with: pip install aiohttp")
-        except Exception as e:
-            logger.error(f"Error sending to Pushover: {e}")
 
 
 class SlackNotifier(BaseNotifier):
@@ -274,7 +251,6 @@ class SlackNotifier(BaseNotifier):
             if not webhook_url:
                 logger.warning("Slack webhook URL not configured")
                 return
-        """
             
             colors = {
                 "info": "#36a64f",
