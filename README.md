@@ -1,26 +1,35 @@
 # DAS Trader Python API Client
 
-Cliente Python completo para la API CMD de DAS Trader Pro que permite trading automatizado, gestión de órdenes en tiempo real, seguimiento de posiciones y streaming de market data.
+<div align="center">
 
-## 🚀 Características Principales
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-- **Trading Completo**: Envío, modificación y cancelación de órdenes (Market, Limit, Stop, Peg, etc.)
-- **Market Data en Tiempo Real**: Streaming de Level 1, Level 2 y Time & Sales
-- **Gestión de Posiciones**: Seguimiento automático de posiciones y P&L en tiempo real
-- **Datos Históricos**: Acceso a gráficos diarios y por minutos
-- **Reconexión Automática**: Manejo robusto de conexiones con reconexión automática
-- **Notificaciones Multi-plataforma**: 7 tipos diferentes de notificaciones
-- **Asyncio Nativo**: Alto rendimiento con operaciones concurrentes
-- **Type Safety**: Completamente tipado para mejor soporte de IDE
-- **Logging Detallado**: Sistema de logging comprehensivo para debugging
+[English](README.md) | [Español](README.es.md)
 
-## 📋 Requisitos
+</div>
+
+Complete Python client for the DAS Trader Pro CMD API that enables automated trading, real-time order management, position tracking, and market data streaming.
+
+## 🚀 Key Features
+
+- **Complete Trading**: Send, modify, and cancel orders (Market, Limit, Stop, Peg, etc.)
+- **Real-Time Market Data**: Level 1, Level 2, and Time & Sales streaming
+- **Position Management**: Automatic position tracking and real-time P&L
+- **Historical Data**: Access to daily and minute charts
+- **Automatic Reconnection**: Robust connection handling with auto-reconnect
+- **Multi-Platform Notifications**: 7 different notification types
+- **Native Asyncio**: High performance with concurrent operations
+- **Type Safety**: Fully typed for better IDE support
+- **Comprehensive Logging**: Detailed logging system for debugging
+
+## 📋 Requirements
 
 - Python 3.8+
-- DAS Trader Pro con CMD API habilitado
-- Cuenta válida de DAS Trader
+- DAS Trader Pro with CMD API enabled
+- Valid DAS Trader account
 
-## ⚡ Instalación Rápida
+## ⚡ Quick Installation
 
 ```bash
 git clone https://github.com/jefrnc/das-bridge.git
@@ -28,66 +37,66 @@ cd das-bridge
 pip install -e .
 ```
 
-### Dependencias Opcionales
+### Optional Dependencies
 
 ```bash
-# Para notificaciones
+# For notifications
 pip install aiohttp
 
-# Para análisis de datos
+# For data analysis
 pip install numpy pandas matplotlib
 
-# Para notificaciones de escritorio en Windows
-pip install win10toast  # Solo Windows
+# For Windows desktop notifications
+pip install win10toast  # Windows only
 
-# Para gestión de configuración
+# For configuration management
 pip install python-dotenv
 ```
 
-## 🔧 Configuración
+## 🔧 Configuration
 
-### 1. Variables de Entorno
+### 1. Environment Variables
 ```bash
 cp .env.example .env
-# Edita .env con tus credenciales
+# Edit .env with your credentials
 ```
 
-### 2. Configuración Básica
+### 2. Basic Configuration
 ```python
 # .env
 DAS_HOST=localhost
 DAS_PORT=9910
-DAS_USERNAME=tu_usuario_das
-DAS_PASSWORD=tu_password_das
-DAS_ACCOUNT=tu_cuenta_das
+DAS_USERNAME=your_das_username
+DAS_PASSWORD=your_das_password
+DAS_ACCOUNT=your_das_account
 ```
 
-## 🎯 Uso Básico
+## 🎯 Basic Usage
 
 ```python
 import asyncio
 from das_trader import DASTraderClient, OrderSide, OrderType, MarketDataLevel
 
 async def main():
-    # Crear cliente
+    # Create client
     client = DASTraderClient(host="localhost", port=9910)
     
     try:
-        # Conectar a DAS Trader
-        await client.connect("tu_usuario", "tu_password", "tu_cuenta")
+        # Connect to DAS Trader
+        await client.connect("your_username", "your_password", "your_account")
         
-        # Obtener buying power
+        # Get buying power
         bp = await client.get_buying_power()
         print(f"Buying Power: ${bp['buying_power']:,.2f}")
         
-        # Suscribirse a market data
+        # Subscribe to market data
         await client.subscribe_quote("AAPL", MarketDataLevel.LEVEL1)
         
-        # Obtener cotización
+        # Get quote
         quote = await client.get_quote("AAPL")
         print(f"AAPL: Bid ${quote.bid} | Ask ${quote.ask} | Last ${quote.last}")
         
-        # Enviar orden
+        # Send order
         order_id = await client.send_order(
             symbol="AAPL",
             side=OrderSide.BUY,
@@ -95,9 +104,9 @@ async def main():
             order_type=OrderType.LIMIT,
             price=150.00
         )
-        print(f"Orden enviada: {order_id}")
+        print(f"Order sent: {order_id}")
         
-        # Verificar posiciones
+        # Check positions
         positions = client.get_positions()
         for pos in positions:
             if not pos.is_flat():
@@ -111,7 +120,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## 📊 Tipos de Órdenes Soportadas
+## 📊 Supported Order Types
 
 ```python
 # Market Order
@@ -132,42 +141,42 @@ await client.send_order("AAPL", OrderSide.SELL, 100, OrderType.TRAILING_STOP,
                        trail_amount=2.00)
 ```
 
-## 📱 Sistema de Notificaciones
+## 📱 Notification System
 
-Soporta 7 tipos diferentes de notificaciones:
+Supports 7 different notification types:
 
 ### 📧 Email
 ```python
 NOTIFICATION_TYPE=email
 EMAIL_SMTP_HOST=smtp.gmail.com
-EMAIL_USERNAME=tu_email@gmail.com
-EMAIL_PASSWORD=tu_app_password
+EMAIL_USERNAME=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
 ```
 
 ### 🎮 Discord
 ```python
 NOTIFICATION_TYPE=discord
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/TU_ID/TU_TOKEN
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN
 ```
 
 ### 📱 Telegram
 ```python
 NOTIFICATION_TYPE=telegram
-TELEGRAM_BOT_TOKEN=tu_bot_token
-TELEGRAM_CHAT_ID=tu_chat_id
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
 ```
 
-### 📲 Pushover (Notificaciones Móviles)
+### 📲 Pushover (Mobile Notifications)
 ```python
 NOTIFICATION_TYPE=pushover
-PUSHOVER_USER_KEY=tu_user_key
-PUSHOVER_APP_TOKEN=tu_app_token
+PUSHOVER_USER_KEY=your_user_key
+PUSHOVER_APP_TOKEN=your_app_token
 ```
 
 ### 💼 Slack
 ```python
 NOTIFICATION_TYPE=slack
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/TU/WEBHOOK
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK
 ```
 
 ### 🖥️ Desktop (Windows/macOS/Linux)
@@ -176,69 +185,69 @@ NOTIFICATION_TYPE=desktop
 ENABLE_DESKTOP_NOTIFICATIONS=true
 ```
 
-### 🌐 Webhook Personalizado
+### 🌐 Custom Webhook
 ```python
 NOTIFICATION_TYPE=webhook
-CUSTOM_WEBHOOK_URL=https://tu-servidor.com/webhook
-WEBHOOK_AUTH_TOKEN=tu_token
+CUSTOM_WEBHOOK_URL=https://your-server.com/webhook
+WEBHOOK_AUTH_TOKEN=your_token
 ```
 
-## 📈 Callbacks y Eventos
+## 📈 Callbacks and Events
 
 ```python
-# Callbacks para órdenes
+# Order callbacks
 def on_order_filled(order):
-    print(f"Orden completada: {order.symbol}")
+    print(f"Order filled: {order.symbol}")
 
 def on_order_rejected(order):
-    print(f"Orden rechazada: {order.symbol}")
+    print(f"Order rejected: {order.symbol}")
 
 client.orders.register_callback("order_filled", on_order_filled)
 client.orders.register_callback("order_rejected", on_order_rejected)
 
-# Callbacks para posiciones
+# Position callbacks
 def on_position_update(position):
-    print(f"Posición actualizada: {position.symbol} P&L: ${position.unrealized_pnl:.2f}")
+    print(f"Position updated: {position.symbol} P&L: ${position.unrealized_pnl:.2f}")
 
 client.positions.register_callback("position_updated", on_position_update)
 
-# Callbacks para market data
+# Market data callbacks
 def on_quote_update(quote):
     print(f"{quote.symbol}: ${quote.last}")
 
 client.market_data.register_callback("quote_update", on_quote_update)
 ```
 
-## 🤖 Ejemplos Avanzados
+## 🤖 Advanced Examples
 
-### Trading Bot Básico
+### Basic Trading Bot
 ```python
-# Ver examples/trading_bot.py
+# See examples/trading_bot.py
 python examples/trading_bot.py
 ```
 
-### Monitor de Portfolio
+### Portfolio Monitor
 ```python
-# Ver examples/portfolio_monitor.py
+# See examples/portfolio_monitor.py
 python examples/portfolio_monitor.py
 ```
 
-### Streaming de Market Data
+### Market Data Streaming
 ```python
-# Ver examples/market_data_streaming.py
+# See examples/market_data_streaming.py
 python examples/market_data_streaming.py
 ```
 
-### Sistema de Notificaciones
+### Notification System
 ```python
-# Ver examples/notifications_example.py
+# See examples/notifications_example.py
 python examples/notifications_example.py
 ```
 
-## 🛡️ Gestión de Riesgos
+## 🛡️ Risk Management
 
 ```python
-# Configuración en config.example.py
+# Configuration in config.example.py
 MAX_POSITION_SIZE = 1000
 MAX_ORDER_VALUE = 50000.0
 STOP_LOSS_PERCENT = 0.02  # 2%
@@ -249,18 +258,18 @@ PAPER_TRADING_MODE = True
 PAPER_TRADING_INITIAL_BALANCE = 100000.0
 ```
 
-## 📚 Documentación de la API
+## 📚 API Documentation
 
-### Clases Principales
+### Main Classes
 
-- **`DASTraderClient`**: Cliente principal para interactuar con DAS Trader
-- **`OrderManager`**: Gestión de órdenes y tracking de estado
-- **`PositionManager`**: Seguimiento de posiciones y P&L
-- **`MarketDataManager`**: Streaming y cache de market data
-- **`ConnectionManager`**: Manejo de conexiones TCP y reconexión
-- **`NotificationManager`**: Sistema de notificaciones multi-plataforma
+- **`DASTraderClient`**: Main client for interacting with DAS Trader
+- **`OrderManager`**: Order management and status tracking
+- **`PositionManager`**: Position tracking and P&L
+- **`MarketDataManager`**: Market data streaming and caching
+- **`ConnectionManager`**: TCP connection handling and reconnection
+- **`NotificationManager`**: Multi-platform notification system
 
-### Enums Principales
+### Main Enums
 
 - **`OrderType`**: MARKET, LIMIT, STOP, STOP_LIMIT, PEG, TRAILING_STOP
 - **`OrderSide`**: BUY, SELL, SHORT, COVER
@@ -271,19 +280,19 @@ PAPER_TRADING_INITIAL_BALANCE = 100000.0
 ## 🧪 Testing
 
 ```bash
-# Ejecutar tests
+# Run tests
 pytest tests/ -v
 
-# Con coverage
+# With coverage
 pytest tests/ --cov=das_trader --cov-report=html
 ```
 
-## 🔐 Seguridad
+## 🔐 Security
 
-- **Nunca** commities credenciales en el código
-- Usa variables de entorno para configuración sensible
-- El archivo `.env` está en `.gitignore`
-- Considera usar paper trading mode para pruebas
+- **Never** commit credentials in code
+- Use environment variables for sensitive configuration
+- The `.env` file is in `.gitignore`
+- Consider using paper trading mode for testing
 
 ## 📝 Logging
 
@@ -291,50 +300,57 @@ pytest tests/ --cov=das_trader --cov-report=html
 import logging
 logging.basicConfig(level=logging.INFO)
 
-# El cliente incluye logging detallado:
-# - Conexiones y autenticación
-# - Órdenes enviadas y recibidas
+# The client includes detailed logging:
+# - Connections and authentication
+# - Sent and received orders
 # - Market data streaming
-# - Errores y reconexiones
+# - Errors and reconnections
 ```
 
-## 🤝 Contribuciones
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas! Por favor:
+Contributions are welcome! Please:
 
-1. Fork el repositorio
-2. Crea una branch para tu feature (`git checkout -b feature/nueva-caracteristica`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva característica'`)
-4. Push a la branch (`git push origin feature/nueva-caracteristica`)
-5. Abre un Pull Request
+1. Fork the repository
+2. Create a branch for your feature (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+This project is under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## ⚠️ Disclaimer
 
-Este software es para propósitos educativos y de desarrollo. El trading automatizado conlleva riesgos financieros significativos. Úsalo bajo tu propia responsabilidad y considera siempre:
+This software is for educational and development purposes. Automated trading carries significant financial risks. Use at your own risk and always consider:
 
-- Pruebas exhaustivas en paper trading mode
-- Gestión adecuada de riesgos
-- Monitoreo constante de posiciones
-- Cumplimiento de regulaciones locales
+- Thorough testing in paper trading mode
+- Proper risk management
+- Constant position monitoring
+- Compliance with local regulations
 
-## 🔗 Enlaces Útiles
+## 🔗 Related Projects
 
-- [Documentación DAS Trader Pro](https://dastrader.com)
+- **[das-api-examples](https://github.com/jefrnc/das-api-examples)**: Practical examples and tests for the DAS Trader Pro CMD API
+  - Direct TCP connection tests
+  - API feature verification
+  - Configuration guides and troubleshooting
+
+## 📚 Useful Links
+
+- [DAS Trader Pro Documentation](https://dastrader.com)
 - [CMD API Manual](CMD%20API%20Manual.pdf)
-- [Ejemplos de Uso](examples/)
+- [Usage Examples](examples/)
 - [Tests](tests/)
 
-## 📞 Soporte
+## 📞 Support
 
-Para reportar bugs o solicitar features:
-- Abre un [Issue](https://github.com/tu_usuario/das-bridge/issues)
-- Revisa la [documentación](examples/)
-- Consulta los [ejemplos](examples/)
+To report bugs or request features:
+- Open an [Issue](https://github.com/jefrnc/das-bridge/issues)
+- Check the [documentation](examples/)
+- Consult the [examples](examples/)
 
 ---
 
-**Desarrollado con ❤️ para la comunidad de trading algorítmico**
+**Developed with ❤️ for the algorithmic trading community**
