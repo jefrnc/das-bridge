@@ -106,9 +106,19 @@ class Commands:
     
     GET_BP = "GET BP"
     GET_SHORT_INFO = "GET SHORTINFO"
+    GET_ACCOUNT_INFO = "GET AccountInfo"
+    GET_POSITIONS = "GET POSITIONS"
+    GET_ORDERS = "GET ORDERS"
+    GET_TRADES = "GET TRADES"
+    GET_SYM_STATUS = "GET SymStatus"
+    GET_LDLU = "GET LDLU"
+    GET_ROUTE_STATUS = "GET RouteStatus"
+    GET_LOCATES = "GET LOCATES"
+    GET_INT_MSGS = "GET INTMSGS"
     
-    SUBSCRIBE = "SUBSCRIBE"
-    UNSUBSCRIBE = "UNSUBSCRIBE"
+    SUBSCRIBE = "SB"
+    UNSUBSCRIBE = "UNSB"
+    SUBSCRIBE_TOPLIST = "SB TopList"  # Para gainers, losers, most active
     GET_QUOTE = "GETQUOTE"
     GET_CHART = "GETCHART"
     
@@ -135,15 +145,22 @@ class MessagePrefix:
     ERROR = "ERROR"
     WARNING = "WARNING"
     INFO = "INFO"
-    BUYING_POWER = "%BP"
-    SHORT_INFO = "%SHORTINFO"
+    BUYING_POWER = "BP"
+    SHORT_INFO = "$SHORTINFO"
+    ACCOUNT_INFO = "$AccountInfo"
+    TRADE = "%TRADE"
+    SYM_STATUS = "$SymStatus"
+    LDLU = "$LDLU"
+    ROUTE_STATUS = "$RouteStatus"
+    INT_MSG = "$INTMSG"
     LOCATE_INFO = "%LOCATEINFO"
     LOCATE_RETURN = "%SLRET"
     LOCATE_ORDER = "%SLOrder"
     LOCATE_AVAIL = "$SLAvailQueryRet"
+    TOPLIST = "$TopList"
 
 
-DEFAULT_HOST = "localhost"
+DEFAULT_HOST = "192.168.4.242"  # DAS en Parallels/Windows
 DEFAULT_PORT = 9910
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_HEARTBEAT_INTERVAL = 30.0
