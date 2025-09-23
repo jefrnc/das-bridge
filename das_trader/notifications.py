@@ -242,52 +242,6 @@ class SlackNotifier(BaseNotifier):
     async def send(self, title: str, message: str, level: str, data: Optional[Dict] = None):
         # Not implemented yet
         raise NotImplementedError("Slack notifications not ready")
-        # Original implementation below (needs testing):
-        """
-        try:
-            import aiohttp
-            
-            webhook_url = self.config.get("SLACK_WEBHOOK_URL")
-            if not webhook_url:
-                logger.warning("Slack webhook URL not configured")
-                return
-            
-            colors = {
-                "info": "#36a64f",
-                "success": "#2eb886",
-                "warning": "#ff9500",
-                "error": "#ff0000"
-            }
-            
-            attachment = {
-                "color": colors.get(level, "#36a64f"),
-                "title": title,
-                "text": message,
-                "ts": int(datetime.now().timestamp())
-            }
-            
-            if data:
-                attachment["fields"] = [
-                    {
-                        "title": "Additional data",
-                        "value": f"```{json.dumps(data, indent=2)[:500]}```",
-                        "short": False
-                    }
-                ]
-            
-            payload = {"attachments": [attachment]}
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(webhook_url, json=payload) as response:
-                    if response.status == 200:
-                        logger.info(f"Slack message sent: {title}")
-                    else:
-                        logger.error(f"Slack error: {response.status}")
-                        
-        except ImportError:
-            logger.error("aiohttp not installed. Install with: pip install aiohttp")
-        except Exception as e:
-            logger.error(f"Error sending to Slack: {e}")
 
 
 class WebhookNotifier(BaseNotifier):

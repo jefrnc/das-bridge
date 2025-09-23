@@ -293,6 +293,87 @@ class OrderManager:
         except Exception as e:
             raise DASOrderError(f"Failed to cancel order: {e}")
     
+    async def send_oco_order(
+        self,
+        symbol: str,
+        side: OrderSide,
+        quantity: int,
+        stop_price: float,
+        target_price: float,
+        time_in_force: TimeInForce = TimeInForce.DAY
+    ) -> Dict[str, Any]:
+        """Send an OCO (One Cancels Other) order.
+        
+        OCO orders in DAS consist of a stop loss and a take profit order
+        where execution of one automatically cancels the other.
+        
+        Args:
+            symbol: Stock symbol
+            side: Order side (BUY or SELL)
+            quantity: Number of shares
+            stop_price: Stop loss price
+            target_price: Take profit price (limit)
+            time_in_force: Order time in force
+            
+        Returns:
+            Dict with order_ids and success status
+        """
+        try:
+            # Validate inputs
+            if not validate_symbol(symbol):
+                raise DASOrderError(f"Invalid symbol: {symbol}")
+            
+            symbol = symbol.upper()
+            
+            # For OCO, we need to send a special command
+            # Format: NEWORDER symbol side qty OCO stop_price target_price route TIF
+            route = "ARCA"  # Default route, could be made configurable
+            
+            # Determine OCO side based on position side
+            if side == OrderSide.BUY:
+                # If buying, OCO will be sell orders
+                oco_side = "S"
+            else:
+                # If selling/short, OCO will be buy orders  
+                oco_side = "B"
+            
+            command = (
+                f"NEWORDER {symbol} {oco_side} {quantity} OCO "
+                f"{stop_price:.2f} {target_price:.2f} {route} {time_in_force.value}"
+            )
+            
+            response = await self.connection.send_command(
+                command,
+                wait_response=True,
+                response_type="ORDER_ACTION"
+            )
+            
+            if response and response.get("type") == "ERROR":
+                raise DASOrderError(f"OCO order rejected: {response.get('message')}")
+            
+            # Parse response to get order IDs
+            order_ids = []
+            if response and "order_id" in response:
+                order_ids = response.get("order_id", [])
+            
+            logger.info(f"OCO order sent: {symbol} - Stop: ${stop_price:.2f}, Target: ${target_price:.2f}")
+            
+            return {
+                "success": True,
+                "order_ids": order_ids,
+                "symbol": symbol,
+                "stop_price": stop_price,
+                "target_price": target_price
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to send OCO order: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "order_ids": []
+            }
+    
     async def cancel_all_orders(self, symbol: Optional[str] = None) -> int:
         """Cancel all orders or all orders for a specific symbol."""
         if symbol:
@@ -404,6 +485,70 @@ class OrderManager:
     
     def get_active_orders(self) -> List[Order]:
         return self.get_orders(active_only=True)
+
+    async def get_pending_orders(self) -> List[Dict[str, Any]]:
+        """Get pending orders using specific DAS command like short-fade-das."""
+        try:
+            response = await self.connection.send_command(
+                Commands.GET_PENDING_ORDERS,
+                wait_response=True,
+                timeout=10.0
+            )
+
+            if response:
+                # Parse pending orders response
+                orders = []
+                if isinstance(response, dict) and "data" in response:
+                    data = response["data"]
+                    if isinstance(data, list):
+                        for line in data:
+                            if line.strip():
+                                orders.append({"raw": line.strip()})
+                    else:
+                        for line in str(data).split('\n'):
+                            if line.strip():
+                                orders.append({"raw": line.strip()})
+
+                logger.info(f"Retrieved {len(orders)} pending orders")
+                return orders
+
+            return []
+
+        except Exception as e:
+            logger.error(f"Failed to get pending orders: {e}")
+            return []
+
+    async def get_executed_orders(self) -> List[Dict[str, Any]]:
+        """Get executed orders using specific DAS command like short-fade-das."""
+        try:
+            response = await self.connection.send_command(
+                Commands.GET_EXECUTED_ORDERS,
+                wait_response=True,
+                timeout=10.0
+            )
+
+            if response:
+                # Parse executed orders response
+                orders = []
+                if isinstance(response, dict) and "data" in response:
+                    data = response["data"]
+                    if isinstance(data, list):
+                        for line in data:
+                            if line.strip():
+                                orders.append({"raw": line.strip()})
+                    else:
+                        for line in str(data).split('\n'):
+                            if line.strip():
+                                orders.append({"raw": line.strip()})
+
+                logger.info(f"Retrieved {len(orders)} executed orders")
+                return orders
+
+            return []
+
+        except Exception as e:
+            logger.error(f"Failed to get executed orders: {e}")
+            return []
     
     def register_callback(self, event: str, callback: Callable):
         """Register a callback for order events."""

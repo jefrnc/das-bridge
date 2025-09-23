@@ -267,8 +267,8 @@ def parse_chart_message(parts: List[str]) -> Dict[str, Any]:
 
 
 def parse_buying_power_message(parts: List[str]) -> Dict[str, Any]:
-    """Parse a buying power message."""
-    # Format: %BP BuyingPower DayTradingBP ...
+    """Parse a buying power message with multi-line support."""
+    # Format: %BP BuyingPower DayTradingBP ... OR multi-line BP response
     try:
         return {
             "type": "BUYING_POWER",
@@ -280,6 +280,48 @@ def parse_buying_power_message(parts: List[str]) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error parsing buying power message: {e}")
         return {"type": "BUYING_POWER", "error": str(e), "raw": parts}
+
+
+def parse_buying_power_response(response: str) -> Dict[str, Any]:
+    """Parse buying power response with multiple format support like short-fade-das."""
+    try:
+        # Single line format: "BP 12345.67"
+        if response.startswith("BP "):
+            bp_str = response.strip().replace("BP ", "")
+            return {
+                "type": "BUYING_POWER",
+                "buying_power": parse_decimal(bp_str),
+                "success": True
+            }
+
+        # Multi-line format: search for BP in each line
+        lines = response.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line.startswith("BP "):
+                bp_str = line.replace("BP ", "")
+                return {
+                    "type": "BUYING_POWER",
+                    "buying_power": parse_decimal(bp_str),
+                    "success": True
+                }
+
+        # No BP found
+        return {
+            "type": "BUYING_POWER",
+            "buying_power": None,
+            "success": False,
+            "error": "No BP data found in response"
+        }
+
+    except Exception as e:
+        logger.error(f"Error parsing buying power response: {e}")
+        return {
+            "type": "BUYING_POWER",
+            "buying_power": None,
+            "success": False,
+            "error": str(e)
+        }
 
 
 def parse_short_info_message(parts: List[str]) -> Dict[str, Any]:

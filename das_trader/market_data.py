@@ -14,6 +14,7 @@ from .constants import (
 )
 from .exceptions import DASMarketDataError, DASInvalidSymbolError
 from .utils import parse_decimal, validate_symbol, parse_timestamp
+from .parsers import DASResponseParser, SmallCapsParser, ParsedQuote
 
 logger = logging.getLogger(__name__)
 
@@ -198,11 +199,11 @@ class MarketDataManager:
     async def get_quote(self, symbol: str) -> Optional[Quote]:
         """Get current quote for a symbol."""
         symbol = symbol.upper()
-        
+
         with self._data_lock:
             if symbol in self._quotes:
                 return self._quotes[symbol]
-        
+
         try:
             command = f"{Commands.GET_QUOTE} {symbol}"
             response = await self.connection.send_command(
@@ -210,18 +211,96 @@ class MarketDataManager:
                 wait_response=True,
                 response_type="QUOTE"
             )
-            
+
             if response and response.get("type") == "QUOTE":
                 quote = self._create_quote_from_message(response)
                 if quote:
                     with self._data_lock:
                         self._quotes[symbol] = quote
                     return quote
-            
+
             return None
-            
+
         except Exception as e:
             logger.error(f"Failed to get quote for {symbol}: {e}")
+            return None
+
+    async def get_level1_data(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get Level 1 market data using correct DAS format like short-fade-das."""
+        if not validate_symbol(symbol):
+            raise DASInvalidSymbolError(f"Invalid symbol: {symbol}")
+
+        symbol = symbol.upper()
+
+        # Try multiple command formats like short-fade-das does
+        commands_to_try = [
+            f"{Commands.GET_LV1} {symbol}",        # GET Lv1 SYMBOL (documented format)
+            f"{Commands.GET_LEVEL1} {symbol}",     # GET LEVEL1 SYMBOL (full name)
+            f"{Commands.GET_MONTAGE} {symbol}",    # GET MONTAGE SYMBOL (DAS montage)
+            f"{Commands.GET_MARKET} {symbol}",     # GET MARKET SYMBOL (market data)
+            f"{Commands.GET_QUOTE} {symbol}",      # GETQUOTE SYMBOL (original format)
+        ]
+
+        logger.info(f"🔍 Getting Level 1 data for {symbol}")
+
+        for i, command in enumerate(commands_to_try, 1):
+            try:
+                logger.info(f"   {i}. Trying: {command}")
+
+                response = await self.connection.send_command(
+                    command,
+                    wait_response=True,
+                    timeout=5.0
+                )
+
+                if response:
+                    logger.info(f"   ✅ Command {i} successful: {command}")
+
+                    # Parse response based on format
+                    if isinstance(response, dict):
+                        return response
+                    else:
+                        # Parse raw response text
+                        return {
+                            "symbol": symbol,
+                            "command": command,
+                            "raw_response": str(response),
+                            "success": True
+                        }
+
+            except Exception as e:
+                logger.warning(f"   ❌ Command {i} failed: {e}")
+                continue
+
+        logger.error(f"❌ All Level 1 commands failed for {symbol}")
+        return None
+
+    async def get_montage_data(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get montage data for symbol using DAS montage command."""
+        if not validate_symbol(symbol):
+            raise DASInvalidSymbolError(f"Invalid symbol: {symbol}")
+
+        symbol = symbol.upper()
+
+        try:
+            command = f"{Commands.GET_MONTAGE} {symbol}"
+            response = await self.connection.send_command(
+                command,
+                wait_response=True,
+                timeout=5.0
+            )
+
+            if response:
+                return {
+                    "symbol": symbol,
+                    "montage_data": response,
+                    "success": True
+                }
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Failed to get montage data for {symbol}: {e}")
             return None
     
     async def get_chart_data(
@@ -441,6 +520,62 @@ class MarketDataManager:
             self._time_sales.clear()
             self._chart_data.clear()
             logger.info("Cleared all market data from memory")
+    
+    # New methods for parsing raw CMD API responses
+    def process_raw_response(self, response: str) -> Dict[str, Any]:
+        """
+        Process raw response from CMD API using the new parsers.
+        Used especially for small caps data from Zimtra.
+        """
+        parsed_data = DASResponseParser.parse_response(response)
+        
+        # Process quotes
+        for quote_data in parsed_data.get('quotes', []):
+            if isinstance(quote_data, ParsedQuote):
+                quote = Quote(
+                    symbol=quote_data.symbol,
+                    bid=Decimal(str(quote_data.bid)),
+                    ask=Decimal(str(quote_data.ask)),
+                    last=Decimal(str(quote_data.last)),
+                    bid_size=quote_data.bid_size,
+                    ask_size=quote_data.ask_size,
+                    volume=quote_data.volume,
+                    timestamp=datetime.now()
+                )
+                with self._data_lock:
+                    self._quotes[quote.symbol] = quote
+        
+        # Return parsed data for further processing
+        return parsed_data
+    
+    def process_small_caps_data(self, response: str) -> Dict[str, Any]:
+        """
+        Process small caps data specifically.
+        Filters and processes data for Zimtra small caps.
+        """
+        parsed_data = SmallCapsParser.parse_response(response)
+        filtered_data = SmallCapsParser.filter_small_caps(parsed_data)
+        
+        # Process each small cap symbol
+        for symbol in SmallCapsParser.SMALL_CAPS_SYMBOLS:
+            summary = SmallCapsParser.get_symbol_summary(filtered_data, symbol)
+            if summary['total_orders'] > 0:
+                logger.info(f"Small cap {symbol}: {summary['total_orders']} orders, "
+                          f"avg price: ${summary['avg_price']:.2f}")
+        
+        return filtered_data
+    
+    async def subscribe_small_caps(self, symbols: Optional[List[str]] = None):
+        """
+        Subscribe to small caps symbols.
+        If no symbols provided, subscribes to default Zimtra small caps.
+        """
+        if symbols is None:
+            symbols = SmallCapsParser.SMALL_CAPS_SYMBOLS
+        
+        for symbol in symbols:
+            await self.subscribe_quote(symbol, MarketDataLevel.LEVEL1)
+            logger.info(f"Subscribed to small cap: {symbol}")
     
     async def unsubscribe_all(self):
         with self._data_lock:

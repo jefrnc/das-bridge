@@ -13,15 +13,23 @@ Complete Python client for the DAS Trader Pro CMD API that enables automated tra
 
 ## 🚀 Key Features
 
+### Core Trading Capabilities
 - **Complete Trading**: Send, modify, and cancel orders (Market, Limit, Stop, Peg, etc.)
 - **Real-Time Market Data**: Level 1, Level 2, and Time & Sales streaming
 - **Position Management**: Automatic position tracking and real-time P&L
 - **Historical Data**: Access to daily and minute charts
+- **Specific Order Queries**: Get pending orders and executed orders separately
+
+### Enhanced Features
+- **Production-Grade Logging**: Structured logging with rotation and masking
+- **Connection Resilience**: Circuit breaker pattern with exponential backoff
+- **Configuration Management**: Environment variables and JSON config support
+- **Enhanced Error Handling**: Categorized exceptions with recovery guidance
+- **Multi-Format Parsing**: Handles various DAS response formats
 - **Automatic Reconnection**: Robust connection handling with auto-reconnect
 - **Multi-Platform Notifications**: 7 different notification types
 - **Native Asyncio**: High performance with concurrent operations
 - **Type Safety**: Fully typed for better IDE support
-- **Comprehensive Logging**: Detailed logging system for debugging
 
 ## 📋 Requirements
 
@@ -118,6 +126,49 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+```
+
+## 🔥 Enhanced Capabilities
+
+### Advanced Order Management
+```python
+# Get specific order types
+pending_orders = await client.get_pending_orders()
+executed_orders = await client.get_executed_orders()
+
+# Enhanced market data
+level1_data = await client.get_level1_data("AAPL")
+montage_data = await client.get_montage_data("AAPL")
+
+# Robust buying power (handles multi-line responses)
+bp_data = await client.get_buying_power()
+```
+
+### Production-Ready Features
+```python
+# Enhanced logging with rotation
+from das_trader.enhanced_logger import EnhancedDASLogger
+
+logger = EnhancedDASLogger(
+    account_id="TRADER123",
+    log_dir="logs/production",
+    max_log_size=50*1024*1024  # 50MB rotation
+)
+
+# Connection resilience
+from das_trader.connection_resilience import ConnectionResilientManager
+
+resilient_mgr = ConnectionResilientManager(
+    client.connection,
+    max_reconnect_attempts=5,
+    health_check_interval=60.0
+)
+
+# Configuration management
+from das_trader.config_manager import load_das_config
+
+config = load_das_config("config.json")
+client = DASTraderClient(**config.get_client_config())
 ```
 
 ## 📊 Supported Order Types
