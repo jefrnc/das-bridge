@@ -1,39 +1,13 @@
-# DAS Trader Python API Client Requirements
+# DAS Trader Python API Client - Core Requirements
 
-# Core dependencies (solo lo esencial)
-python-dotenv>=0.19.0  # Para variables de entorno
+# Core dependencies
+python-dotenv>=0.19.0
+aiofiles>=23.0.0
 
-# Testing dependencies
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
-pytest-mock>=3.10.0
+# Optional: Notifications
+aiohttp>=3.8.0
+win10toast>=0.9; sys_platform == "win32"
 
-# Development dependencies
-black>=22.0.0
-flake8>=5.0.0
-mypy>=1.0.0
-isort>=5.0.0
-
-# Documentation
-sphinx>=5.0.0
-sphinx-rtd-theme>=1.0.0
-
-# Dependencias opcionales para notificaciones
-aiohttp>=3.8.0  # Para Discord, Telegram, Slack, webhooks
-win10toast>=0.9; sys_platform == "win32"  # Notificaciones Windows
-
-# Dependencias opcionales para análisis
-numpy>=1.21.0  # Cálculos numéricos
-pandas>=1.3.0  # Análisis de datos
-matplotlib>=3.5.0  # Gráficos
-plotly>=5.0.0  # Gráficos interactivos
-
-# Logging y monitoreo
-structlog>=22.0.0  # Logging estructurado
-prometheus-client>=0.14.0  # Métricas
-
-# Validación de datos
-pydantic>=1.10.0  # Validación de datos
-
-# Rendimiento
-uvloop>=0.17.0; sys_platform != "win32"  # Event loop más rápido en Unix
+# Optional: Data analysis
+numpy>=1.21.0; python_version >= "3.8"
+pandas>=1.3.0; python_version >= "3.8"
