@@ -109,6 +109,8 @@ class Commands:
     GET_ACCOUNT_INFO = "GET AccountInfo"
     GET_POSITIONS = "GET POSITIONS"
     GET_ORDERS = "GET ORDERS"
+    GET_PENDING_ORDERS = "GET PENDINGORDERS"
+    GET_EXECUTED_ORDERS = "GET EXECUTEDORDERS"
     GET_TRADES = "GET TRADES"
     GET_SYM_STATUS = "GET SymStatus"
     GET_LDLU = "GET LDLU"
@@ -120,6 +122,10 @@ class Commands:
     UNSUBSCRIBE = "UNSB"
     SUBSCRIBE_TOPLIST = "SB TopList"  # Para gainers, losers, most active
     GET_QUOTE = "GETQUOTE"
+    GET_LV1 = "GET Lv1"  # Correct DAS format (lowercase 'v')
+    GET_LEVEL1 = "GET LEVEL1"  # Alternative format
+    GET_MONTAGE = "GET MONTAGE"  # DAS montage command
+    GET_MARKET = "GET MARKET"  # Market data command
     GET_CHART = "GETCHART"
     
     SCRIPT = "SCRIPT"

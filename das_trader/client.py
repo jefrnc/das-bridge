@@ -14,6 +14,8 @@ from .notifications import NotificationManager
 from .constants import TimeInForce, Exchange, Commands
 from .exceptions import DASAPIError, DASConnectionError
 from .utils import parse_decimal, validate_symbol
+# Note: Importing premarket after class definition to avoid circular imports
+from .indicators import TechnicalIndicators, PremarketIndicators
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +64,31 @@ class DASTraderClient:
         
         self.notifications = NotificationManager(notification_config or {}) if notification_config else None
         
+        # Add indicators support
+        self.indicators = TechnicalIndicators()
+        self.premarket_indicators = PremarketIndicators()
+
+        # Initialize premarket after to avoid circular imports
+        self.premarket = None
+        self.premarket_scanner = None
+        self._init_premarket_components()
+        
         self._short_info_cache = {}  # symbol -> short info
         self._locate_info = {}  # symbol -> locate data
         
         # TODO: implement cache expiration for short info
         
         self._register_handlers()
+
+    def _init_premarket_components(self):
+        """Initialize premarket components to avoid circular imports."""
+        try:
+            from .premarket import PremarketSession, PremarketScanner
+            self.premarket = PremarketSession(self)
+            self.premarket_scanner = PremarketScanner(self)
+        except ImportError:
+            # Premarket components not available
+            pass
     
     def _register_handlers(self):
         # Register message handlers
@@ -200,6 +221,37 @@ class DASTraderClient:
             **kwargs
         )
     
+    async def send_oco_order(
+        self,
+        symbol: str,
+        side: OrderSide,
+        quantity: int,
+        stop_price: float,
+        target_price: float,
+        time_in_force: TimeInForce = TimeInForce.GTC
+    ) -> Dict[str, Any]:
+        """Send OCO (One Cancels Other) order.
+        
+        Args:
+            symbol: Stock symbol
+            side: Order side
+            quantity: Number of shares
+            stop_price: Stop loss price
+            target_price: Take profit price
+            time_in_force: Time in force (GTC recommended for premarket)
+            
+        Returns:
+            Dict with order result
+        """
+        return await self.orders.send_oco_order(
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            stop_price=stop_price,
+            target_price=target_price,
+            time_in_force=time_in_force
+        )
+    
     async def cancel_order(self, order_id: str) -> bool:
         return await self.orders.cancel_order(order_id)
     
@@ -223,10 +275,26 @@ class DASTraderClient:
     def get_orders(self, **kwargs) -> List[Order]:
         """Get orders with optional filters."""
         return self.orders.get_orders(**kwargs)
-    
+
     def get_active_orders(self) -> List[Order]:
         """Get all active orders."""
         return self.orders.get_active_orders()
+
+    async def get_pending_orders(self) -> List[Dict[str, Any]]:
+        """Get pending orders using specific DAS command like short-fade-das."""
+        return await self.orders.get_pending_orders()
+
+    async def get_executed_orders(self) -> List[Dict[str, Any]]:
+        """Get executed orders using specific DAS command like short-fade-das."""
+        return await self.orders.get_executed_orders()
+
+    async def get_level1_data(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get Level 1 market data using correct DAS format like short-fade-das."""
+        return await self.market_data.get_level1_data(symbol)
+
+    async def get_montage_data(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get montage data using DAS montage command."""
+        return await self.market_data.get_montage_data(symbol)
     
     def get_positions(self) -> List[Position]:
         """Get all positions."""
@@ -245,8 +313,34 @@ class DASTraderClient:
         return self.positions.get_total_pnl()
     
     async def get_buying_power(self) -> Dict[str, Decimal]:
-        """Get current buying power."""
-        return await self.positions.get_buying_power()
+        """Get current buying power with enhanced parsing like short-fade-das."""
+        try:
+            response = await self.connection.send_command(
+                Commands.GET_BP,
+                wait_response=True,
+                timeout=5.0
+            )
+
+            if response:
+                # Use enhanced buying power parsing
+                from .utils import parse_buying_power_response
+                bp_data = parse_buying_power_response(str(response))
+
+                if bp_data.get("success"):
+                    buying_power = bp_data.get("buying_power", Decimal("0"))
+                    return {
+                        "buying_power": buying_power,
+                        "day_trading_bp": buying_power,
+                        "overnight_bp": buying_power,
+                    }
+
+            # Fallback to original method
+            return await self.positions.get_buying_power()
+
+        except Exception as e:
+            logger.error(f"Failed to get buying power: {e}")
+            # Fallback to original method
+            return await self.positions.get_buying_power()
     
     async def subscribe_quote(
         self,
