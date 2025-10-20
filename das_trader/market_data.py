@@ -311,31 +311,36 @@ class MarketDataManager:
         end_date: Optional[date] = None,
         bars: int = 100
     ) -> List[ChartBar]:
-        """Get historical chart data."""
+        """Get historical chart data.
+
+        Note: Chart data is obtained via subscription (SB Symbol ChartType).
+        The old GETCHART command is invalid and has been replaced with the subscription model.
+        """
         if not validate_symbol(symbol):
             raise DASInvalidSymbolError(f"Invalid symbol: {symbol}")
-        
+
         symbol = symbol.upper()
-        
+
         try:
-            cmd_parts = [Commands.GET_CHART, symbol, chart_type.value]
-            
-            if start_date:
-                cmd_parts.append(f"START={start_date.strftime('%Y%m%d')}")
-            if end_date:
-                cmd_parts.append(f"END={end_date.strftime('%Y%m%d')}")
-            
-            cmd_parts.append(f"BARS={bars}")
-            
-            command = " ".join(cmd_parts)
-            
+            # Use subscription command: SB Symbol ChartType (e.g., "SB AAPL Minchart")
+            command = f"{Commands.SUBSCRIBE} {symbol} {chart_type.value}"
+
+            # Note: start_date, end_date, and bars parameters are not supported
+            # by the DAS API subscription model. These would need to be handled
+            # differently (e.g., filtering received data on the client side)
+            if start_date or end_date or bars != 100:
+                logger.warning(
+                    f"Chart subscription does not support start_date, end_date, or bars parameters. "
+                    f"All available chart data will be received for {symbol}"
+                )
+
             await self.connection.send_command(command, wait_response=False)
-            
+
             await asyncio.sleep(1.0)
-            
+
             with self._data_lock:
                 return self._chart_data.get(symbol, {}).get(chart_type, [])
-            
+
         except Exception as e:
             raise DASMarketDataError(f"Failed to get chart data for {symbol}: {e}")
     

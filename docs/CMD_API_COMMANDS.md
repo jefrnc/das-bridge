@@ -24,9 +24,15 @@
 | `SB [symbol] Lv1` | Subscribe a Level 1 | Datos de mercado en tiempo real |
 | `SB [symbol] tms` | Subscribe a Time and Sales | `$T&S [symbol] [price] [volume] ...` |
 | `SB [symbol] Lv2` | Subscribe a Level 2 | `$Lv2 [symbol] [condition] [MMID] [price] [size]` |
+| `SB [symbol] Minchart` | Subscribe a Minute Chart (OHLCV) | `$Chart [symbol] ...` |
+| `SB [symbol] Daychart` | Subscribe a Day Chart (OHLCV) | `$Chart [symbol] ...` |
+| `SB [symbol] Tickchart` | Subscribe a Tick Chart | `$Chart [symbol] ...` |
 | `UNSB [symbol] Lv1` | Unsubscribe de Level 1 | Confirmación |
 | `UNSB [symbol] tms` | Unsubscribe de Time and Sales | Confirmación |
 | `UNSB [symbol] Lv2` | Unsubscribe de Level 2 | Confirmación |
+| `UNSB [symbol] Minchart` | Unsubscribe de Minute Chart | Confirmación |
+| `UNSB [symbol] Daychart` | Unsubscribe de Day Chart | Confirmación |
+| `UNSB [symbol] Tickchart` | Unsubscribe de Tick Chart | Confirmación |
 | `GET SHORTINFO [symbol]` | Info de short para símbolo | `$SHORTINFO [symbol] [Y/N] [shares] ...` |
 
 ### Trading (Órdenes)
@@ -38,9 +44,10 @@
 
 Los siguientes comandos devuelven "INVALD COMMAND!" o error similar:
 
+- `GETCHART [symbol]` - No existe, usar `SB [symbol] Minchart/Daychart/Tickchart` en su lugar
 - `GET QUOTE [symbol]` - No existe, usar subscribe Level 1 en su lugar
 - `GET ORDER [symbol]` - Usar `GET ORDERS` sin símbolo
-- `GET TRADE [symbol]` - Usar `GET TRADES` sin símbolo  
+- `GET TRADE [symbol]` - Usar `GET TRADES` sin símbolo
 - `GET LV1 [symbol]` - Usar `SB [symbol] Lv1`
 - `ISSHORTABLE [symbol]` - Usar `GET SHORTINFO [symbol]`
 - `PING` - No implementado

@@ -80,9 +80,9 @@ class MarketDataLevel(Enum):
 
 class ChartType(Enum):
     """Chart data types."""
-    DAY = "DAY"
-    MINUTE = "MINUTE"
-    TICK = "TICK"
+    DAY = "Daychart"
+    MINUTE = "Minchart"
+    TICK = "Tickchart"
 
 
 class Commands:
@@ -126,7 +126,7 @@ class Commands:
     GET_LEVEL1 = "GET LEVEL1"  # Alternative format
     GET_MONTAGE = "GET MONTAGE"  # DAS montage command
     GET_MARKET = "GET MARKET"  # Market data command
-    GET_CHART = "GETCHART"
+    # GET_CHART = "GETCHART"  # DEPRECATED: Use "SB Symbol {ChartType}" instead (e.g., "SB AAPL Minchart")
     
     SCRIPT = "SCRIPT"
     GLOBAL_SCRIPT = "SCRIPT GLOBALSCRIPT"
