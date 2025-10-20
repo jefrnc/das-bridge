@@ -1,15 +1,20 @@
 """Setup script for DAS Trader Python API client."""
 
 from setuptools import setup, find_packages
+from pathlib import Path
+
+# Read the README file
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="das-trader-client",
-    version="1.0.0",
+    name="das-bridge",
+    version="0.1.0",
     author="DAS Bridge Contributors",
     author_email="noreply@example.com",
-    description="Professional Python client for DAS Trader Pro CMD API",
-    long_description="Professional Python client for DAS Trader Pro CMD API that enables automated trading, order management, position tracking, and real-time market data streaming. Features comprehensive order types, short locate integration, Level 1/2 market data, and multi-platform notifications.",
-    long_description_content_type="text/plain",
+    description="Complete Python client for DAS Trader Pro CMD API",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/jefrnc/das-bridge",
     packages=find_packages(),
     classifiers=[
