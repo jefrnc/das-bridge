@@ -27,7 +27,6 @@ Complete Python client for the DAS Trader Pro CMD API that enables automated tra
 - **Enhanced Error Handling**: Categorized exceptions with recovery guidance
 - **Multi-Format Parsing**: Handles various DAS response formats
 - **Automatic Reconnection**: Robust connection handling with auto-reconnect
-- **Multi-Platform Notifications**: 7 different notification types
 - **Native Asyncio**: High performance with concurrent operations
 - **Type Safety**: Fully typed for better IDE support
 
@@ -184,63 +183,12 @@ await client.send_order("AAPL", OrderSide.BUY, 100, OrderType.LIMIT, price=150.0
 await client.send_order("AAPL", OrderSide.SELL, 100, OrderType.STOP, stop_price=145.00)
 
 # Stop Limit
-await client.send_order("AAPL", OrderSide.SELL, 100, OrderType.STOP_LIMIT, 
+await client.send_order("AAPL", OrderSide.SELL, 100, OrderType.STOP_LIMIT,
                        price=148.00, stop_price=145.00)
 
 # Trailing Stop
 await client.send_order("AAPL", OrderSide.SELL, 100, OrderType.TRAILING_STOP,
                        trail_amount=2.00)
-```
-
-## 📱 Notification System
-
-Supports 7 different notification types:
-
-### 📧 Email
-```python
-NOTIFICATION_TYPE=email
-EMAIL_SMTP_HOST=smtp.gmail.com
-EMAIL_USERNAME=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-```
-
-### 🎮 Discord
-```python
-NOTIFICATION_TYPE=discord
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN
-```
-
-### 📱 Telegram
-```python
-NOTIFICATION_TYPE=telegram
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id
-```
-
-### 📲 Pushover (Mobile Notifications)
-```python
-NOTIFICATION_TYPE=pushover
-PUSHOVER_USER_KEY=your_user_key
-PUSHOVER_APP_TOKEN=your_app_token
-```
-
-### 💼 Slack
-```python
-NOTIFICATION_TYPE=slack
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK
-```
-
-### 🖥️ Desktop (Windows/macOS/Linux)
-```python
-NOTIFICATION_TYPE=desktop
-ENABLE_DESKTOP_NOTIFICATIONS=true
-```
-
-### 🌐 Custom Webhook
-```python
-NOTIFICATION_TYPE=webhook
-CUSTOM_WEBHOOK_URL=https://your-server.com/webhook
-WEBHOOK_AUTH_TOKEN=your_token
 ```
 
 ## 📈 Callbacks and Events
@@ -287,12 +235,6 @@ python examples/portfolio_monitor.py
 ```python
 # See examples/market_data_streaming.py
 python examples/market_data_streaming.py
-```
-
-### Notification System
-```python
-# See examples/notifications_example.py
-python examples/notifications_example.py
 ```
 
 ## 🛡️ Risk Management
