@@ -2,8 +2,10 @@
 
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/das-bridge.svg)](https://pypi.org/project/das-bridge/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://img.shields.io/pypi/dm/das-bridge.svg)](https://pypi.org/project/das-bridge/)
 
 [English](README.md) | [Español](README.es.md)
 
@@ -30,6 +32,14 @@ Cliente Python completo para la API CMD de DAS Trader Pro que permite trading au
 - Cuenta válida de DAS Trader
 
 ## ⚡ Instalación Rápida
+
+### Desde PyPI (Recomendado)
+
+```bash
+pip install das-bridge
+```
+
+### Desde el Código Fuente (Desarrollo)
 
 ```bash
 git clone https://github.com/jefrnc/das-bridge.git
