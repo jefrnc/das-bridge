@@ -189,24 +189,30 @@ def parse_sync_message(message: str) -> Dict[str, Any]:
 
 def parse_order_message(parts: List[str]) -> Dict[str, Any]:
     # Parse order updates from DAS
-    # print(f"Parsing order: {parts}")  # debug
+    # Format: %ORDER id token symbol side type qty lvqty cxlqty price route status time origoid account trader source
+    # Example: %ORDER 71003 189 GSIT B L 10 0 10 15.37 EDUPRO Canceled 11:57:03 0 YOUR_ACCOUNT YOUR_ACCOUNT Hotkey
     try:
         return {
             "type": "ORDER",
             "order_id": parts[0] if len(parts) > 0 else None,
-            "symbol": parts[1] if len(parts) > 1 else None,
-            "side": parts[2] if len(parts) > 2 else None,
-            "quantity": int(parts[3]) if len(parts) > 3 else 0,
-            "price": parse_decimal(parts[4]) if len(parts) > 4 else None,
-            "order_type": parts[5] if len(parts) > 5 else None,
-            "status": parts[6] if len(parts) > 6 else None,
-            "filled_qty": int(parts[7]) if len(parts) > 7 else 0,
-            "avg_price": parse_decimal(parts[8]) if len(parts) > 8 else None,
-            "remaining_qty": int(parts[9]) if len(parts) > 9 else 0,
-            "timestamp": parse_timestamp(" ".join(parts[10:12])) if len(parts) > 11 else None,
+            "token": parts[1] if len(parts) > 1 else None,
+            "symbol": parts[2] if len(parts) > 2 else None,
+            "side": parts[3] if len(parts) > 3 else None,  # B, S, SS, BC, SC, etc.
+            "order_type": parts[4] if len(parts) > 4 else None,  # L=Limit, M=Market, etc.
+            "quantity": int(parts[5]) if len(parts) > 5 else 0,
+            "leaves_qty": int(parts[6]) if len(parts) > 6 else 0,  # Remaining unfilled quantity
+            "cancelled_qty": int(parts[7]) if len(parts) > 7 else 0,
+            "price": parse_decimal(parts[8]) if len(parts) > 8 else None,
+            "route": parts[9] if len(parts) > 9 else None,
+            "status": parts[10] if len(parts) > 10 else None,
+            "time": parts[11] if len(parts) > 11 else None,
+            "orig_order_id": parts[12] if len(parts) > 12 else None,
+            "account": parts[13] if len(parts) > 13 else None,
+            "trader": parts[14] if len(parts) > 14 else None,
+            "source": parts[15] if len(parts) > 15 else None,
         }
     except Exception as e:
-        logger.error(f"Error parsing order message: {e}")
+        logger.error(f"Error parsing order message: {e}, parts: {parts}")
         return {"type": "ORDER", "error": str(e), "raw": parts}
 
 

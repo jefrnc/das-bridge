@@ -4,11 +4,17 @@ from enum import Enum, auto
 
 
 class OrderType(Enum):
-    # Order types from DAS manual
-    MARKET = "MKT"
-    LIMIT = "LIMIT"
-    STOP = "STOPMKT"
-    STOP_LIMIT = "STOPLMT"
+    # Order types from DAS manual and API messages
+    # DAS API uses single-letter codes in responses (L, M, S, etc.)
+    LIMIT = "L"  # Limit order
+    MARKET = "M"  # Market order
+    STOP_MARKET = "S"  # Stop market
+    STOP_LIMIT = "T"  # Stop limit
+    # Full names for order placement (still supported)
+    LIMIT_FULL = "LIMIT"
+    MARKET_FULL = "MKT"
+    STOP_FULL = "STOPMKT"
+    STOP_LIMIT_FULL = "STOPLMT"
     STOP_TRAILING = "STOPTRAILING"
     STOP_RANGE = "STOPRANGE"
     STOP_RANGE_MARKET = "STOPRANGEMKT"
