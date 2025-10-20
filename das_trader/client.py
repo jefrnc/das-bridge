@@ -341,7 +341,42 @@ class DASTraderClient:
             logger.error(f"Failed to get buying power: {e}")
             # Fallback to original method
             return await self.positions.get_buying_power()
-    
+
+    async def get_account_info(self) -> Dict[str, Any]:
+        """Get account information from DAS Trader.
+
+        Returns:
+            Dict with account details like account_id, account_type, etc.
+        """
+        try:
+            response = await self.connection.send_command(
+                Commands.GET_ACCOUNT_INFO,
+                wait_response=True,
+                timeout=5.0
+            )
+
+            if response:
+                # DAS returns account info in multiple formats
+                # Parse the response into a structured dict
+                return {
+                    "account_id": self.connection._account if hasattr(self.connection, '_account') else None,
+                    "account_type": response.get("account_type", "N/A"),
+                    "raw_response": response
+                }
+
+            return {
+                "account_id": self.connection._account if hasattr(self.connection, '_account') else None,
+                "account_type": "N/A"
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to get account info: {e}")
+            return {
+                "account_id": self.connection._account if hasattr(self.connection, '_account') else None,
+                "account_type": "N/A",
+                "error": str(e)
+            }
+
     async def subscribe_quote(
         self,
         symbol: str,
