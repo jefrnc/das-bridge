@@ -59,12 +59,14 @@ def parse_message(message: str) -> Dict[str, Any]:
     """Parse a message from DAS API into structured data."""
     message = message.strip()
     # print(f"DEBUG: Parsing message: {message[:50]}...")  # debug
-    
+
     # Determine message type by prefix
     if message.startswith("%"):
         return parse_control_message(message)
     elif message.startswith("$"):
         return parse_data_message(message)
+    elif message.startswith("#"):
+        return parse_sync_message(message)
     elif message.startswith("ERROR"):
         return {"type": "ERROR", "message": message[6:].strip()}
     elif message.startswith("WARNING"):
@@ -114,9 +116,9 @@ def parse_data_message(message: str) -> Dict[str, Any]:
     parts = message.split()
     if not parts:
         return {"type": "UNKNOWN", "raw": message}
-    
+
     msg_type = parts[0]
-    
+
     if msg_type == "$Quote":
         return parse_quote_message(parts[1:])
     elif msg_type == "$Lv2":
@@ -131,6 +133,58 @@ def parse_data_message(message: str) -> Dict[str, Any]:
         return parse_locate_avail_message(parts[1:])
     else:
         return {"type": msg_type, "data": parts[1:]}
+
+
+def parse_sync_message(message: str) -> Dict[str, Any]:
+    """Parse synchronization/control messages (starting with #)."""
+    message = message.strip()
+
+    # Handle various sync messages from DAS
+    if message.startswith("#Welcome"):
+        return {"type": "WELCOME", "message": message[1:]}
+    elif message.startswith("#LOGIN SUCCESSED"):
+        return {"type": "LOGIN", "success": True, "message": "Login successful"}
+    elif message.startswith("#LOGIN FAILED"):
+        return {"type": "LOGIN", "success": False, "message": "Login failed"}
+    elif message == "#POS" or message.startswith("#POS "):
+        return {"type": "POS_START", "raw": message}
+    elif message == "#POSEND":
+        return {"type": "POS_END"}
+    elif message == "#Order" or message.startswith("#Order "):
+        return {"type": "ORDER_START", "raw": message}
+    elif message == "#OrderEnd":
+        return {"type": "ORDER_END"}
+    elif message == "#Trade" or message.startswith("#Trade "):
+        return {"type": "TRADE_START", "raw": message}
+    elif message == "#TradeEnd":
+        return {"type": "TRADE_END"}
+    elif message == "#SLOrder" or message.startswith("#SLOrder "):
+        return {"type": "SLORDER_START", "raw": message}
+    elif message == "#SLOrderEnd" or message == "#LOrderEnd":
+        return {"type": "SLORDER_END"}
+    elif message.startswith("#OrderServer:"):
+        # Connection status messages
+        parts = message[1:].split(":")
+        return {
+            "type": "CONNECTION_STATUS",
+            "server": "order",
+            "event": parts[1] if len(parts) > 1 else "",
+            "status": parts[2] if len(parts) > 2 else "",
+            "message": message
+        }
+    elif message.startswith("#QuoteServer:"):
+        # Connection status messages
+        parts = message[1:].split(":")
+        return {
+            "type": "CONNECTION_STATUS",
+            "server": "quote",
+            "event": parts[1] if len(parts) > 1 else "",
+            "status": parts[2] if len(parts) > 2 else "",
+            "message": message
+        }
+    else:
+        # Generic sync message
+        return {"type": "SYNC", "message": message[1:]}
 
 
 def parse_order_message(parts: List[str]) -> Dict[str, Any]:

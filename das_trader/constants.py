@@ -75,7 +75,7 @@ class MarketDataLevel(Enum):
     """Market data subscription levels."""
     LEVEL1 = "Lv1"
     LEVEL2 = "Lv2"
-    TIME_SALES = "T&S"
+    TIME_SALES = "tms"
 
 
 class ChartType(Enum):

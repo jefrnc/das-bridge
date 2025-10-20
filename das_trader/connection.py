@@ -83,11 +83,12 @@ class ConnectionManager:
         self._password = password
         self._account = account
         self._watch_mode = watch_mode
-        
+
         try:
             await self._establish_connection()
-            await self._authenticate()
+            # Start background tasks BEFORE authentication so message reader can receive LOGIN response
             self._start_background_tasks()
+            await self._authenticate()
             logger.info(f"Successfully connected to DAS Trader API at {self.host}:{self.port}")
         except Exception as e:
             logger.error(f"Failed to connect to DAS Trader API: {e}")
@@ -124,18 +125,22 @@ class ConnectionManager:
     async def _authenticate(self):
         watch_flag = "1" if hasattr(self, '_watch_mode') and self._watch_mode else "0"
         login_cmd = f"{Commands.LOGIN} {self._username} {self._password} {self._account} {watch_flag}"
-        
+
         try:
-            response = await self.send_command(login_cmd, wait_response=True)
-            
+            response = await self.send_command(login_cmd, wait_response=True, response_type="LOGIN")
+
             if response.get("type") == "ERROR":
                 raise DASAuthenticationError(f"Authentication failed: {response.get('message', 'Unknown error')}")
-            
+
+            if response.get("type") == "LOGIN":
+                if not response.get("success", False):
+                    raise DASAuthenticationError(f"Authentication failed: {response.get('message', 'Login failed')}")
+
             self._authenticated = True
             logger.info("Successfully authenticated with DAS Trader API")
-            
+
             await self._check_connection_status()
-            
+
         except Exception as e:
             self._authenticated = False
             raise DASAuthenticationError(f"Authentication failed: {e}")
@@ -264,8 +269,9 @@ class ConnectionManager:
         """Send a command to DAS Trader API."""
         if not self._connected:
             raise DASConnectionError("Not connected to DAS Trader API")
-        
-        if not self._authenticated and command != Commands.LOGIN:
+
+        # Allow LOGIN command even when not authenticated
+        if not self._authenticated and not command.startswith(Commands.LOGIN):
             raise DASAuthenticationError("Not authenticated with DAS Trader API")
         
         try:
