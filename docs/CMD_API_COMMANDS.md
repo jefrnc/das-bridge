@@ -1,6 +1,6 @@
 # DAS Trader CMD API - Comandos Válidos
 
-Última actualización: 2025-09-05
+Última actualización: 2025-10-20
 
 ## Comandos Probados y Funcionando
 
@@ -22,7 +22,11 @@
 | Comando | Descripción | Formato de Respuesta |
 |---------|-------------|---------------------|
 | `SB [symbol] Lv1` | Subscribe a Level 1 | Datos de mercado en tiempo real |
+| `SB [symbol] tms` | Subscribe a Time and Sales | `$T&S [symbol] [price] [volume] ...` |
+| `SB [symbol] Lv2` | Subscribe a Level 2 | `$Lv2 [symbol] [condition] [MMID] [price] [size]` |
 | `UNSB [symbol] Lv1` | Unsubscribe de Level 1 | Confirmación |
+| `UNSB [symbol] tms` | Unsubscribe de Time and Sales | Confirmación |
+| `UNSB [symbol] Lv2` | Unsubscribe de Level 2 | Confirmación |
 | `GET SHORTINFO [symbol]` | Info de short para símbolo | `$SHORTINFO [symbol] [Y/N] [shares] ...` |
 
 ### Trading (Órdenes)
@@ -51,11 +55,16 @@ Los siguientes comandos devuelven "INVALD COMMAND!" o error similar:
 
 3. **Small Caps**: Para símbolos como BBLG, CIGL, HWH, usar los mismos comandos pero los datos pueden ser limitados.
 
-4. **Formato de respuestas**: 
+4. **Time and Sales**: El comando correcto es `SB [symbol] tms` (minúsculas), **NO** `T&S`. Las respuestas del servidor usan el prefijo `$T&S`.
+   - ✓ Correcto: `SB AAPL tms`
+   - ✗ Incorrecto: `SB AAPL T&S`
+
+5. **Formato de respuestas**:
    - Las órdenes empiezan con `%ORDER`
    - Los trades empiezan con `%TRADE`
    - Las posiciones empiezan con `%POS`
    - Info de short empieza con `$SHORTINFO`
+   - Time and Sales empieza con `$T&S`
 
 ## Ejemplo de Uso
 
