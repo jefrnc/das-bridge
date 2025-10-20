@@ -2,8 +2,10 @@
 
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/das-bridge.svg)](https://pypi.org/project/das-bridge/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://img.shields.io/pypi/dm/das-bridge.svg)](https://pypi.org/project/das-bridge/)
 
 [English](README.md) | [Español](README.es.md)
 
@@ -37,6 +39,14 @@ Complete Python client for the DAS Trader Pro CMD API that enables automated tra
 - Valid DAS Trader account
 
 ## ⚡ Quick Installation
+
+### From PyPI (Recommended)
+
+```bash
+pip install das-bridge
+```
+
+### From Source (Development)
 
 ```bash
 git clone https://github.com/jefrnc/das-bridge.git
