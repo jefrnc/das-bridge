@@ -22,6 +22,14 @@ Complete Python client for the DAS Trader Pro CMD API that enables automated tra
 - **Historical Data**: Access to daily and minute charts
 - **Specific Order Queries**: Get pending orders and executed orders separately
 
+### 💰 Risk Management & Strategies (NEW!)
+- **Dollar-Based Position Sizing**: Calculate shares to risk exact dollar amounts
+- **Pre-Built Strategies**: Long/short with automatic stops and targets
+- **Risk/Reward Calculations**: Built-in ratio calculations and validation
+- **Scale-Out Support**: Exit positions at multiple target levels
+- **Buying Power Validation**: Automatic position size validation
+- **Slippage Modeling**: Conservative position sizing with slippage consideration
+
 ### Enhanced Features
 - **Production-Grade Logging**: Structured logging with rotation and masking
 - **Connection Resilience**: Circuit breaker pattern with exponential backoff
@@ -179,6 +187,217 @@ from das_trader.config_manager import load_das_config
 config = load_das_config("config.json")
 client = DASTraderClient(**config.get_client_config())
 ```
+
+### Smart Locate Manager
+
+das-bridge includes an intelligent locate manager that helps you analyze and request stock locates for short selling with volume and cost controls.
+
+```python
+# Analyze locate cost and availability
+analysis = await client.locate_manager.analyze_locate(
+    symbol="AAPL",
+    desired_shares=500
+)
+
+print(f"Recommendation: {analysis['recommendation']}")
+print(f"Locate Rate: ${analysis['locate_rate']:.4f}/share")
+print(f"Total Cost: ${analysis['locate_total_cost']:.2f}")
+print(f"Is ETB (Free): {analysis['is_etb']}")
+
+# Check and optionally purchase locate
+result = await client.locate_manager.ensure_locate(
+    symbol="TSLA",
+    shares_needed=100,
+    auto_purchase=True  # Will purchase if approved
+)
+
+if result['success']:
+    if result.get('purchase_confirmed'):
+        print(f"Locate purchased! Cost: ${result['locate_total_cost']:.2f}")
+    elif result.get('already_available'):
+        print(f"Already have {result['current_locates']} shares located")
+
+# Direct locate price inquiry
+locate_info = await client.inquire_locate_price(
+    symbol="NVDA",
+    quantity=100,
+    route="ALLROUTE"
+)
+```
+
+**Features:**
+- **Volume Control**: Limits shares to max % of daily volume (default 1%)
+- **Cost Control**: Rejects locates above max cost thresholds
+- **ETB Detection**: Identifies Easy to Borrow (free) stocks
+- **Safety Checks**: Validates pricing data integrity
+- **Block Sizing**: Always requests in 100-share blocks
+
+**Configurable Parameters:**
+- `max_volume_pct`: Maximum % of daily volume (default 1.0%)
+- `max_cost_pct`: Maximum cost as % of position value (default 1.5%)
+- `max_total_cost`: Maximum total cost per 100 shares (default $2.50)
+- `block_size`: Share block size for locate requests (default 100)
+
+See [examples/locate_example.py](examples/locate_example.py) for complete examples.
+
+## 💰 Risk Management & Trading Strategies
+
+das-bridge includes built-in risk management tools and pre-built trading strategies to help you trade safely and efficiently.
+
+### Position Sizing Based on Dollar Risk
+
+```python
+# Calculate shares to risk exactly $200
+entry_price = 150.00
+stop_price = 149.00  # $1 stop
+risk_amount = 200.00  # Risk exactly $200
+
+shares = client.risk.calculate_shares_for_risk(
+    entry_price=entry_price,
+    stop_price=stop_price,
+    risk_dollars=risk_amount
+)
+# Returns: 200 shares (200 / 1.00 = 200)
+
+# With slippage consideration
+shares = client.risk.calculate_shares_for_risk(
+    entry_price=entry_price,
+    stop_price=stop_price,
+    risk_dollars=risk_amount,
+    slippage=0.05  # Expect $0.05 slippage per share
+)
+# Returns: 190 shares (more conservative)
+```
+
+### Pre-Built Trading Strategies
+
+#### Long Position with Automatic Stop
+```python
+# Buy AAPL with $200 risk, automatic position sizing and stop placement
+result = await client.strategies.buy_with_risk_stop(
+    symbol="AAPL",
+    entry_price=150.00,
+    stop_price=149.00,
+    risk_amount=200.00,
+    entry_type="mid",  # Enter at mid price
+    target_price=152.00  # Optional profit target
+)
+
+if result.success:
+    print(f"Position opened!")
+    print(f"Entry Order: {result.entry_order_id}")
+    print(f"Stop Order: {result.stop_order_id}")
+    print(f"Target Order: {result.target_order_id}")
+```
+
+#### Short Position with Risk Management
+```python
+# Short TSLA with $300 risk
+result = await client.strategies.sell_with_risk_stop(
+    symbol="TSLA",
+    entry_price=150.00,
+    stop_price=151.00,  # Stop above entry for shorts
+    risk_amount=300.00,
+    target_price=147.00  # Target below entry
+)
+```
+
+#### Close Position
+```python
+# Close entire position at market
+result = await client.strategies.close_position("AAPL", exit_type="market")
+
+# Close 50% at limit price
+result = await client.strategies.close_position(
+    "AAPL",
+    exit_type="limit",
+    limit_price=151.00,
+    percentage=50.0
+)
+```
+
+#### Scale Out Strategy
+```python
+# Scale out of position at multiple targets
+result = await client.strategies.scale_out(
+    symbol="AAPL",
+    targets=[
+        (151.00, 33.3),  # Sell 1/3 at $151
+        (152.00, 33.3),  # Sell 1/3 at $152
+        (153.00, 33.4)   # Sell remaining at $153
+    ]
+)
+```
+
+### Risk Calculations
+
+```python
+# Calculate risk/reward ratio
+ratio = client.risk.calculate_risk_reward_ratio(
+    entry_price=150.00,
+    stop_price=149.00,  # $1 risk
+    target_price=152.00  # $2 reward
+)
+# Returns: 2.0 (meaning 1:2 risk/reward ratio)
+
+# Validate position against buying power
+is_valid, msg = client.risk.validate_position_against_buying_power(
+    entry_price=150.00,
+    shares=500,
+    buying_power=100000.00
+)
+
+# Calculate maximum shares for available capital
+max_shares = client.risk.calculate_max_shares_for_buying_power(
+    entry_price=150.00,
+    buying_power=50000.00,
+    margin_requirement=1.0  # 1.0 = cash account, 0.25 = 4x margin
+)
+```
+
+See [examples/risk_based_trading.py](examples/risk_based_trading.py) for complete examples.
+
+### ⏰ Extended Hours Trading
+
+das-bridge validates trading sessions and handles order type restrictions automatically.
+
+#### Session Restrictions
+
+| Session | Hours (ET) | Allowed Orders | Strategies Default |
+|---------|------------|----------------|-------------------|
+| **Premarket** | 4:00 AM - 9:30 AM | ✅ Limit only | ❌ Blocked |
+| **RTH** | 9:30 AM - 4:00 PM | ✅ All types | ✅ Full support |
+| **After-Hours** | 4:00 PM - 8:00 PM | ✅ Limit only | ❌ Blocked |
+
+**Important:** Stop orders are **NOT allowed** in premarket or after-hours.
+
+#### Extended Hours Example
+
+```python
+# During premarket/after-hours - will be REJECTED by default
+result = await client.strategies.buy_with_risk_stop(...)
+# Returns: success=False, "Cannot execute strategy in premarket..."
+
+# Enable extended hours mode (entry only, no stop)
+result = await client.strategies.buy_with_risk_stop(
+    symbol="AAPL",
+    entry_price=150.0,
+    stop_price=149.0,  # Used ONLY for position sizing
+    risk_amount=200.0,
+    entry_type="limit",
+    allow_extended_hours=True  # ✅ Enable extended hours
+)
+
+if result.success:
+    print(f"Entry placed: {result.entry_order_id}")
+    print(f"Stop placed: {result.stop_order_id}")  # None
+    print(result.message)
+    # "Long position opened: 200 shares of AAPL
+    #  WARNING: Stop order NOT placed (premarket restriction).
+    #  Suggested stop: $149.00. You must manage stop manually."
+```
+
+See [docs/TRADING_SESSIONS.md](docs/TRADING_SESSIONS.md) for complete details.
 
 ## 📊 Supported Order Types
 

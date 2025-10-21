@@ -9,7 +9,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="das-bridge",
-    version="0.1.0",
+    version="1.2.0",
     author="DAS Bridge Contributors",
     author_email="noreply@example.com",
     description="Complete Python client for DAS Trader Pro CMD API",

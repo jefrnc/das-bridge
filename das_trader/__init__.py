@@ -10,6 +10,9 @@ from .orders import OrderManager, OrderType, OrderSide, OrderStatus
 from .positions import PositionManager
 from .market_data import MarketDataManager
 from .notifications import NotificationManager
+from .strategies import TradingStrategies, StrategyResult
+from .risk import RiskCalculator, PositionSizeResult
+from .locate_manager import SmartLocateManager
 from .exceptions import (
     DASConnectionError,
     DASAuthenticationError,
@@ -17,7 +20,7 @@ from .exceptions import (
     DASAPIError
 )
 
-__version__ = "0.1.0"
+__version__ = "1.2.0"
 __author__ = "DAS Bridge Development Team"
 
 __all__ = [
@@ -30,6 +33,11 @@ __all__ = [
     "PositionManager",
     "MarketDataManager",
     "NotificationManager",
+    "TradingStrategies",
+    "StrategyResult",
+    "RiskCalculator",
+    "PositionSizeResult",
+    "SmartLocateManager",
     "DASConnectionError",
     "DASAuthenticationError",
     "DASOrderError",
