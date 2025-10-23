@@ -30,9 +30,9 @@ async def test_two_locates():
     ) as client:
         try:
             await client.connect(
-                username='YOUR_ACCOUNT',
+                username='YOUR_USERNAME_HERE',
                 password='YOUR_PASSWORD_HERE',
-                account='YOUR_ACCOUNT'
+                account='YOUR_USERNAME_HERE'
             )
             print("✅ Connected to DAS")
             print()

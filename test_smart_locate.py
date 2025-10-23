@@ -352,9 +352,9 @@ async def test_smart_locate():
         log_level='WARNING'
     ) as client:
         await client.connect(
-            username='YOUR_ACCOUNT',
+            username='YOUR_USERNAME_HERE',
             password='YOUR_PASSWORD_HERE',
-            account='YOUR_ACCOUNT'
+            account='YOUR_USERNAME_HERE'
         )
         print("✅ Connected to DAS\n")
 
