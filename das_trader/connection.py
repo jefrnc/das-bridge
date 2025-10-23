@@ -139,30 +139,9 @@ class ConnectionManager:
             self._authenticated = True
             logger.info("Successfully authenticated with DAS Trader API")
 
-            await self._check_connection_status()
-
         except Exception as e:
             self._authenticated = False
             raise DASAuthenticationError(f"Authentication failed: {e}")
-    
-    async def _check_connection_status(self):
-        try:
-            response = await self.send_command(Commands.CHECK_CONNECTION, wait_response=True)
-            
-            if response.get("type") == "CONNECTION_STATUS":
-                self._order_server_connected = response.get("order_server", False)
-                self._quote_server_connected = response.get("quote_server", False)
-                
-                logger.info(f"Connection status - Order Server: {self._order_server_connected}, "
-                          f"Quote Server: {self._quote_server_connected}")
-                
-                if not self._order_server_connected:
-                    logger.warning("Order server is not connected. Trading operations may fail.")
-                if not self._quote_server_connected:
-                    logger.warning("Quote server is not connected. Market data may be unavailable.")
-                    
-        except Exception as e:
-            logger.error(f"Failed to check connection status: {e}")
     
     def _start_background_tasks(self):
         self._running = True

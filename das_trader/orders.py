@@ -180,7 +180,7 @@ class OrderManager:
         if order_type in [OrderType.LIMIT, OrderType.STOP_LIMIT] and price is None:
             raise DASOrderError(f"{order_type.value} order requires a price")
         
-        if order_type in [OrderType.STOP, OrderType.STOP_LIMIT, OrderType.STOP_TRAILING] and stop_price is None and trail_amount is None:
+        if order_type in [OrderType.STOP_MARKET, OrderType.STOP_LIMIT, OrderType.STOP_TRAILING] and stop_price is None and trail_amount is None:
             raise DASOrderError(f"{order_type.value} order requires a stop price or trail amount")
         
         if trail_amount is not None and trail_amount <= 0:

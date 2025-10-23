@@ -451,16 +451,43 @@ def validate_symbol(symbol: str) -> bool:
 
 def parse_locate_return_message(parts: List[str]) -> Dict[str, Any]:
     try:
+        # Try to parse with better error handling
+        symbol = parts[0] if len(parts) > 0 else None
+
+        # Quantity might be second or first numeric field
+        quantity = 0
+        if len(parts) > 1:
+            try:
+                quantity = int(parts[1])
+            except ValueError:
+                # Maybe quantity is elsewhere, set to 0
+                quantity = 0
+
+        # Rate parsing
+        rate = None
+        if len(parts) > 2:
+            try:
+                rate = parse_decimal(parts[2])
+            except:
+                rate = None
+
+        # Available flag
+        available = False
+        if len(parts) > 3:
+            available = parts[3].upper() == "YES"
+
         return {
             "type": "LOCATE_RETURN",
-            "symbol": parts[0] if len(parts) > 0 else None,
-            "quantity": int(parts[1]) if len(parts) > 1 else 0,
-            "rate": parse_decimal(parts[2]) if len(parts) > 2 else None,
-            "available": parts[3].upper() == "YES" if len(parts) > 3 else False,
+            "symbol": symbol,
+            "quantity": quantity,
+            "rate": rate,
+            "available": available,
             "route": parts[4] if len(parts) > 4 else None,
+            "raw_parts": parts  # For debugging
         }
     except Exception as e:
         logger.error(f"Error parsing locate return message: {e}")
+        logger.debug(f"Raw parts: {parts}")
         return {"type": "LOCATE_RETURN", "error": str(e), "raw": parts}
 
 

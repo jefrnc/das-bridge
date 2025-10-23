@@ -16,6 +16,9 @@ from .exceptions import DASAPIError, DASConnectionError
 from .utils import parse_decimal, validate_symbol
 # Note: Importing premarket after class definition to avoid circular imports
 from .indicators import TechnicalIndicators, PremarketIndicators
+from .strategies import TradingStrategies
+from .risk import RiskCalculator
+from .locate_manager import SmartLocateManager
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +66,17 @@ class DASTraderClient:
         self.market_data = MarketDataManager(self.connection)
         
         self.notifications = NotificationManager(notification_config or {}) if notification_config else None
-        
+
         # Add indicators support
         self.indicators = TechnicalIndicators()
         self.premarket_indicators = PremarketIndicators()
+
+        # Add risk management and trading strategies
+        self.risk = RiskCalculator()
+        self.strategies = TradingStrategies(self)
+
+        # Add smart locate manager with volume and cost controls
+        self.locate_manager = SmartLocateManager(self)
 
         # Initialize premarket after to avoid circular imports
         self.premarket = None
@@ -158,7 +168,9 @@ class DASTraderClient:
             )
         
         await self.positions.refresh_positions()
-        await self.positions.get_buying_power()
+        # DISABLED: GET BP command times out during connection (causes 30s delay)
+        # Users can call get_buying_power() explicitly when needed
+        # await self.positions.get_buying_power()
     
     async def disconnect(self):
         """Disconnect from DAS Trader API."""

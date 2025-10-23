@@ -197,111 +197,53 @@ class MarketDataManager:
             logger.error(f"Failed to unsubscribe from {symbol}: {e}")
     
     async def get_quote(self, symbol: str) -> Optional[Quote]:
-        """Get current quote for a symbol."""
+        """Get current quote for a symbol.
+
+        Returns quote data from subscription cache. You must call subscribe_quote()
+        first to receive real-time data. The GETQUOTE command does not exist in
+        DAS API - use SB (subscribe) instead.
+        """
         symbol = symbol.upper()
 
         with self._data_lock:
             if symbol in self._quotes:
                 return self._quotes[symbol]
 
-        try:
-            command = f"{Commands.GET_QUOTE} {symbol}"
-            response = await self.connection.send_command(
-                command,
-                wait_response=True,
-                response_type="QUOTE"
-            )
-
-            if response and response.get("type") == "QUOTE":
-                quote = self._create_quote_from_message(response)
-                if quote:
-                    with self._data_lock:
-                        self._quotes[symbol] = quote
-                    return quote
-
-            return None
-
-        except Exception as e:
-            logger.error(f"Failed to get quote for {symbol}: {e}")
-            return None
+        # DISABLED: GETQUOTE command does not exist in DAS API (causes timeout)
+        # Must subscribe first using subscribe_quote() which uses "SB {symbol} Lv1"
+        return None
 
     async def get_level1_data(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """Get Level 1 market data using correct DAS format like short-fade-das."""
-        if not validate_symbol(symbol):
-            raise DASInvalidSymbolError(f"Invalid symbol: {symbol}")
+        """DEPRECATED: DAS API does not support GET commands for market data.
 
-        symbol = symbol.upper()
+        Use subscribe_quote() instead to receive real-time Level 1 data.
+        The following commands DO NOT exist in DAS API and will timeout:
+        - GET Lv1, GET LEVEL1, GET MONTAGE, GET MARKET, GETQUOTE
 
-        # Try multiple command formats like short-fade-das does
-        commands_to_try = [
-            f"{Commands.GET_LV1} {symbol}",        # GET Lv1 SYMBOL (documented format)
-            f"{Commands.GET_LEVEL1} {symbol}",     # GET LEVEL1 SYMBOL (full name)
-            f"{Commands.GET_MONTAGE} {symbol}",    # GET MONTAGE SYMBOL (DAS montage)
-            f"{Commands.GET_MARKET} {symbol}",     # GET MARKET SYMBOL (market data)
-            f"{Commands.GET_QUOTE} {symbol}",      # GETQUOTE SYMBOL (original format)
-        ]
-
-        logger.info(f"🔍 Getting Level 1 data for {symbol}")
-
-        for i, command in enumerate(commands_to_try, 1):
-            try:
-                logger.info(f"   {i}. Trying: {command}")
-
-                response = await self.connection.send_command(
-                    command,
-                    wait_response=True,
-                    timeout=5.0
-                )
-
-                if response:
-                    logger.info(f"   ✅ Command {i} successful: {command}")
-
-                    # Parse response based on format
-                    if isinstance(response, dict):
-                        return response
-                    else:
-                        # Parse raw response text
-                        return {
-                            "symbol": symbol,
-                            "command": command,
-                            "raw_response": str(response),
-                            "success": True
-                        }
-
-            except Exception as e:
-                logger.warning(f"   ❌ Command {i} failed: {e}")
-                continue
-
-        logger.error(f"❌ All Level 1 commands failed for {symbol}")
+        Always use the subscription model:
+        1. await client.market_data.subscribe_quote(symbol)
+        2. await asyncio.sleep(1)  # Wait for data
+        3. quote = await client.market_data.get_quote(symbol)
+        """
+        logger.warning(
+            f"get_level1_data() is deprecated. "
+            f"Use subscribe_quote('{symbol}') instead. "
+            f"GET commands for market data do not exist in DAS API."
+        )
         return None
 
     async def get_montage_data(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """Get montage data for symbol using DAS montage command."""
-        if not validate_symbol(symbol):
-            raise DASInvalidSymbolError(f"Invalid symbol: {symbol}")
+        """DEPRECATED: GET MONTAGE command does not exist in DAS API.
 
-        symbol = symbol.upper()
-
-        try:
-            command = f"{Commands.GET_MONTAGE} {symbol}"
-            response = await self.connection.send_command(
-                command,
-                wait_response=True,
-                timeout=5.0
-            )
-
-            if response:
-                return {
-                    "symbol": symbol,
-                    "montage_data": response,
-                    "success": True
-                }
-
-            return None
-
-        except Exception as e:
-            logger.error(f"Failed to get montage data for {symbol}: {e}")
-            return None
+        Use subscribe() with Level 2 instead:
+        await client.market_data.subscribe(symbol, MarketDataLevel.LEVEL2)
+        """
+        logger.warning(
+            f"get_montage_data() is deprecated. "
+            f"Use subscribe('{symbol}', MarketDataLevel.LEVEL2) instead. "
+            f"GET MONTAGE command does not exist in DAS API."
+        )
+        return None
     
     async def get_chart_data(
         self,

@@ -93,23 +93,27 @@ class ChartType(Enum):
 
 class Commands:
     """DAS API command constants."""
+    # Authentication
     LOGIN = "LOGIN"
     LOGOUT = "LOGOUT"
-    
-    CHECK_CONNECTION = "CHECKCONNECTION"
+
+    # System commands
     ECHO = "ECHO"
     ECHO_ON = "ECHO ON"
     ECHO_OFF = "ECHO OFF"
     CLIENT = "CLIENT"
     QUIT = "QUIT"
-    
+
+    # Order management
     NEW_ORDER = "NEWORDER"
     CANCEL_ORDER = "CANCEL"
     CANCEL_ALL = "CANCELALL"
     REPLACE_ORDER = "REPLACE"
-    
+
+    # Position management
     POS_REFRESH = "POSREFRESH"
-    
+
+    # Account info commands
     GET_BP = "GET BP"
     GET_SHORT_INFO = "GET SHORTINFO"
     GET_ACCOUNT_INFO = "GET AccountInfo"
@@ -123,20 +127,17 @@ class Commands:
     GET_ROUTE_STATUS = "GET RouteStatus"
     GET_LOCATES = "GET LOCATES"
     GET_INT_MSGS = "GET INTMSGS"
-    
+
+    # Market data - IMPORTANT: Use subscription model (SB/UNSB), NOT request-response
     SUBSCRIBE = "SB"
     UNSUBSCRIBE = "UNSB"
     SUBSCRIBE_TOPLIST = "SB TopList"  # Para gainers, losers, most active
-    GET_QUOTE = "GETQUOTE"
-    GET_LV1 = "GET Lv1"  # Correct DAS format (lowercase 'v')
-    GET_LEVEL1 = "GET LEVEL1"  # Alternative format
-    GET_MONTAGE = "GET MONTAGE"  # DAS montage command
-    GET_MARKET = "GET MARKET"  # Market data command
-    # GET_CHART = "GETCHART"  # DEPRECATED: Use "SB Symbol {ChartType}" instead (e.g., "SB AAPL Minchart")
-    
+
+    # Scripts
     SCRIPT = "SCRIPT"
     GLOBAL_SCRIPT = "SCRIPT GLOBALSCRIPT"
-    
+
+    # Locate management
     LOCATE_STOCK = "SLNEWORDER"
     LOCATE_INQUIRE = "SLPRICEINQUIRE"
     LOCATE_CANCEL = "SLCANCELORDER"

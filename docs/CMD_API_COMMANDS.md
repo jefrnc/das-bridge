@@ -1,6 +1,6 @@
 # DAS Trader CMD API - Comandos Válidos
 
-Última actualización: 2025-10-20
+Última actualización: 2025-10-21
 
 ## Comandos Probados y Funcionando
 
@@ -44,11 +44,15 @@
 
 Los siguientes comandos devuelven "INVALD COMMAND!" o error similar:
 
+- `CHECKCONNECTION` - No existe (causa timeout de 30s)
 - `GETCHART [symbol]` - No existe, usar `SB [symbol] Minchart/Daychart/Tickchart` en su lugar
 - `GET QUOTE [symbol]` - No existe, usar subscribe Level 1 en su lugar
 - `GET ORDER [symbol]` - Usar `GET ORDERS` sin símbolo
 - `GET TRADE [symbol]` - Usar `GET TRADES` sin símbolo
 - `GET LV1 [symbol]` - Usar `SB [symbol] Lv1`
+- `GET LEVEL1 [symbol]` - Usar `SB [symbol] Lv1`
+- `GET MONTAGE [symbol]` - Usar `SB [symbol] Lv1/Lv2`
+- `GET MARKET [symbol]` - Usar `SB [symbol] Lv1`
 - `ISSHORTABLE [symbol]` - Usar `GET SHORTINFO [symbol]`
 - `PING` - No implementado
 - `GET POS` - Usar `GET POSITIONS`
@@ -73,6 +77,17 @@ Los siguientes comandos devuelven "INVALD COMMAND!" o error similar:
    - Info de short empieza con `$SHORTINFO`
    - Time and Sales empieza con `$T&S`
 
+6. **Comandos que causan timeouts**:
+   - `GET BP` funciona PERO puede hacer timeout durante conexión (especialmente fuera de RTH)
+   - Se recomienda llamarlo solo cuando se necesite, NO durante la inicialización
+   - Usar lazy-loading para buying power
+
+7. **Market Data**:
+   - NO usar comandos GET para market data (GETQUOTE, GET LV1, etc)
+   - Siempre usar modelo de suscripción: `SB [symbol] Lv1` primero
+   - Luego leer datos del cache local
+   - Comandos GET para quotes NO existen y causan timeout de 30s
+
 ## Ejemplo de Uso
 
 ```python
@@ -80,10 +95,10 @@ import socket
 
 # Conectar
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('10.211.55.3', 9910))
+sock.connect(('your_das_server', 9910))
 
 # Login
-sock.send(b"LOGIN YOUR_ACCOUNT password YOUR_ACCOUNT\r\n")
+sock.send(b"LOGIN username password account\r\n")
 
 # Obtener buying power
 sock.send(b"GET BP\r\n")
@@ -92,7 +107,7 @@ sock.send(b"GET BP\r\n")
 sock.send(b"GET ORDERS\r\n")
 
 # Subscribe a market data
-sock.send(b"SB CIGL Lv1\r\n")
+sock.send(b"SB AAPL Lv1\r\n")
 ```
 
 ## Parsers Disponibles

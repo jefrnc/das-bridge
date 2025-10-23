@@ -483,3 +483,13 @@ todo.txt
 .project
 .classpath
 .settings/
+
+# Testing (do NOT commit)
+testing/
+.env.testing
+.env.test
+test_results/
+test_logs/
+TESTING_PLAN.md
+*_test_output.txt
+*_test_results.json
